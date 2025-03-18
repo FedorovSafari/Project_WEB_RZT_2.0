@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
-        /* Стили остаются такими же, как в оригинальном коде */
+        /* Основные стили */
         body {
             font-family: 'Inter', Arial, sans-serif;
             margin: 0;
@@ -24,31 +24,31 @@
             padding: 10px 20px;
             background-color: black;
             border-bottom: 1px solid #444;
-            margin-left: 120px; /* Отступ для навигации */
+            margin-left: 120px;
             position: fixed;
             top: 0;
             right: 0;
-            left: 40px; /* Чтобы шапка не заходила на навигацию */
+            left: 40px;
             z-index: 1000;
         }
         .search-bar {
-            width: 20%; /* Уменьшенный размер поиска */
-            margin-right: auto; /* Поиск слева */
-            margin-left: 500px; /* Сдвиг поиска правее */
+            width: 20%;
+            margin-right: auto;
+            margin-left: 500px;
             position: relative;
         }
         .search-bar input {
             width: 100%;
-            padding: 8px 10px 8px 30px; /* Отступ для иконки лупы слева */
+            padding: 8px 10px 8px 30px;
             background-color: #333;
             border: 1px solid #444;
             color: white;
-            border-radius: 20px; /* Более округлые углы */
+            border-radius: 20px;
             font-family: 'Inter', sans-serif;
         }
         .search-bar i {
             position: absolute;
-            left: 10px; /* Иконка слева */
+            left: 10px;
             top: 50%;
             transform: translateY(-50%);
             color: #888;
@@ -72,6 +72,29 @@
         .auth-buttons button:hover {
             background-color: #ddd;
         }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-info span {
+            color: white;
+            font-size: 14px;
+        }
+        .user-info button {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .user-info button:hover {
+            background-color: #cc0000;
+        }
         nav {
             width: 120px;
             background-color: black;
@@ -81,7 +104,7 @@
             position: fixed;
             top: 0;
             left: 0;
-            z-index: 1001; /* Навигация выше шапки */
+            z-index: 1001;
         }
         nav a {
             color: white;
@@ -94,137 +117,216 @@
         .content {
             flex: 1;
             padding: 20px;
-            margin-left: 160px; /* Увеличенный отступ для навигации */
-            margin-top: 60px; /* Отступ для шапки */
+            margin-left: 160px;
+            margin-top: 60px;
         }
         .reviews-container {
             display: flex;
-            gap: 20px; /* Расстояние между колонками */
+            gap: 20px;
         }
         .reviews-column {
-            flex: 1; /* Равная ширина колонок */
+            flex: 1;
         }
         .review {
             border: 1px solid #444;
-            background-color: #333; /* Серый фон */
+            background-color: #333;
             padding: 15px;
-            border-radius: 16px; /* Более округлые углы */
+            border-radius: 16px;
             margin-bottom: 15px;
         }
         .review strong {
             display: inline-block;
-            background-color: #555; /* Светло-серый фон */
-            border: 1px solid #777; /* Светло-серая рамка */
+            background-color: #555;
+            border: 1px solid #777;
             padding: 5px 10px;
-            border-radius: 12px; /* Более округлые углы */
+            border-radius: 12px;
             margin-bottom: 10px;
-            font-weight: normal; /* Убираем жирный текст */
+            font-weight: normal;
         }
+
+        /* Стили для окошек треков */
         .releases {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px; /* Расстояние между релизами */
+            gap: 20px;
         }
         .release {
-            width: 200px;
+            width: 200px; /* Фиксированная ширина */
+            height: 300px; /* Фиксированная высота */
             background-color: #333;
             border: 1px solid #444;
             border-radius: 12px;
             overflow: hidden;
             text-align: center;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .release img {
             width: 100%;
-            height: auto;
+            height: 200px; /* Фиксированная высота для изображения */
+            object-fit: cover; /* Обрезаем изображение, чтобы оно заполняло контейнер */
             border-bottom: 1px solid #444;
         }
         .release h3 {
             margin: 10px 0;
             font-size: 16px;
+            white-space: nowrap; /* Текст не переносится на новую строку */
+            overflow: hidden; /* Скрываем текст, который не умещается */
+            text-overflow: ellipsis; /* Добавляем многоточие, если текст не умещается */
+            padding: 0 10px; /* Отступы слева и справа */
         }
         .release p {
             margin: 5px 0;
             font-size: 14px;
             color: #aaa;
+            padding: 0 10px; /* Отступы слева и справа */
         }
+
     </style>
 </head>
 <body>
-    <nav>
-        <a href="index.html">Главная</a>
-        <a href="tracks.html">Треки</a>
-        <a href="albums.html">Альбомы</a>
-        <a href="artists.html">Артисты</a>
-        <a href="about.html">О нас</a>
-    </nav>
+<nav>
+    <a href="index.html">Главная</a>
+    <a href="tracks.html">Треки</a>
+    <a href="albums.html">Альбомы</a>
+    <a href="artists.html">Артисты</a>
+    <a href="about.html">О нас</a>
+</nav>
 
-    <header>
-        <div class="search-bar">
-            <i class="fas fa-search"></i> <!-- Иконка лупы -->
-            <input type="text" placeholder="Поиск...">
-        </div>
-        <div class="auth-buttons">
-            <a href="login.html"><button>Войти</button></a> <!-- Ссылка на страницу входа -->
-            <a href="register.html"><button>Регистрация</button></a> <!-- Ссылка на страницу регистрации -->
-        </div>
-    </header>
-
-    <div class="content">
-        <div class="reviews-container">
-            <div class="reviews-column">
-                <h2>Популярные рецензии</h2>
-                <div class="review">
-                    <strong>Имя пользователя</strong><br>
-                    <em>Заголовок</em><br>
-                    Текст рецензии
-                </div>
-                <div class="review">
-                    <strong>Имя пользователя</strong><br>
-                    <em>Заголовок</em><br>
-                    Текст рецензии
-                </div>
-            </div>
-
-            <div class="reviews-column">
-                <h2>Все рецензии</h2>
-                <div class="review">
-                    <strong>Имя пользователя</strong><br>
-                    <em>Заголовок</em><br>
-                    Текст рецензии
-                </div>
-                <div class="review">
-                    <strong>Имя пользователя</strong><br>
-                    <em>Заголовок</em><br>
-                    Текст рецензии
-                </div>
-            </div>
-        </div>
-
-        <section>
-            <h2>Добавленные релизы</h2>
-            <div class="releases">
-                <div class="release">
-                    <img src="https://via.placeholder.com/200" alt="Обложка трека">
-                    <h3>Название трека</h3>
-                    <p>Автор</p>
-                </div>
-                <div class="release">
-                    <img src="https://via.placeholder.com/200" alt="Обложка трека">
-                    <h3>Название трека</h3>
-                    <p>Автор</p>
-                </div>
-                <div class="release">
-                    <img src="https://via.placeholder.com/200" alt="Обложка трека">
-                    <h3>Название трека</h3>
-                    <p>Автор</p>
-                </div>
-                <div class="release">
-                    <img src="https://via.placeholder.com/200" alt="Обложка трека">
-                    <h3>Название трека</h3>
-                    <p>Автор</p>
-                </div>
-            </div>
-        </section>
+<header>
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Поиск...">
     </div>
+    <div class="auth-buttons" id="authButtons">
+        <a href="login.html"><button>Войти</button></a>
+        <a href="register.html"><button>Регистрация</button></a>
+    </div>
+    <div class="user-info" id="userInfo" style="display: none;">
+        <span id="userName"></span>
+        <button id="logoutButton">Выйти</button>
+    </div>
+</header>
+
+<div class="content">
+    <div class="reviews-container">
+        <div class="reviews-column">
+            <h2>Популярные рецензии</h2>
+            <div class="review">
+                <strong>Имя пользователя</strong><br>
+                <em>Заголовок</em><br>
+                Текст рецензии
+            </div>
+            <div class="review">
+                <strong>Имя пользователя</strong><br>
+                <em>Заголовок</em><br>
+                Текст рецензии
+            </div>
+        </div>
+
+        <div class="reviews-column">
+            <h2>Все рецензии</h2>
+            <div class="review">
+                <strong>Имя пользователя</strong><br>
+                <em>Заголовок</em><br>
+                Текст рецензии
+            </div>
+            <div class="review">
+                <strong>Имя пользователя</strong><br>
+                <em>Заголовок</em><br>
+                Текст рецензии
+            </div>
+        </div>
+    </div>
+
+    <section>
+        <h2>Добавленные релизы</h2>
+        <div class="releases" id="releases">
+
+        </div>
+    </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const token = localStorage.getItem('token');
+        const authButtons = document.getElementById('authButtons');
+        const userInfo = document.getElementById('userInfo');
+        const userName = document.getElementById('userName');
+        const logoutButton = document.getElementById('logoutButton');
+        const releasesContainer = document.getElementById('releases');
+        const searchInput = document.getElementById('searchInput');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const searchResults = document.getElementById('searchResults');
+
+        // Проверка авторизации
+        if (token) {
+            const decodedToken = JSON.parse(atob(token.split('.')[1]));
+            userName.textContent = decodedToken.email;
+            authButtons.style.display = 'none';
+            userInfo.style.display = 'flex';
+        } else {
+            authButtons.style.display = 'flex';
+            userInfo.style.display = 'none';
+        }
+
+        // Обработка выхода
+        logoutButton.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        });
+
+        // Загрузка треков
+        try {
+            const response = await fetch('http://localhost:5000/api/tracks/recent?limit=6');
+            if (!response.ok) {
+                throw new Error('Ошибка при загрузке треков');
+            }
+            const tracks = await response.json();
+            displayTracks(tracks);
+        } catch (error) {
+            console.error('Ошибка:', error);
+        }
+
+        // Отображение треков
+        function displayTracks(tracks) {
+            releasesContainer.innerHTML = ''; // Очищаем контейнер
+            tracks.forEach(track => {
+                const div = document.createElement('div');
+                div.className = 'release';
+                div.innerHTML = `
+                    <img src="${track.img}" alt="Обложка трека">
+                    <h3>${track.title}</h3>
+                    <p>${new Date(track.date).toLocaleDateString()}</p>
+                `;
+                div.addEventListener('click', () => {
+                    if (token) {
+                        window.location.href = `track.html?id=${track.id}`; // Переход на страницу трека
+                    } else {
+                        window.location.href = 'login.html'; // Переход на страницу входа
+                    }
+                });
+                releasesContainer.appendChild(div);
+            });
+        }
+
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('searchInput');
+
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.trim();
+                if (query) {
+                    window.location.href = `search.html?query=${encodeURIComponent(query)}`;
+                }
+            }
+        });
+    });
+
+</script>
+</div>
 </body>
 </html>

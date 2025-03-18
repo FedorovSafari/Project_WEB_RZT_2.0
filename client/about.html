@@ -72,6 +72,29 @@
         .auth-buttons button:hover {
             background-color: #ddd;
         }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-info span {
+            color: white;
+            font-size: 14px;
+        }
+        .user-info button {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .user-info button:hover {
+            background-color: #cc0000;
+        }
         nav {
             width: 120px;
             background-color: black;
@@ -113,38 +136,80 @@
     </style>
 </head>
 <body>
-    <nav>
-        <a href="index.html">Главная</a>
-        <a href="tracks.html">Треки</a>
-        <a href="albums.html">Альбомы</a>
-        <a href="artists.html">Артисты</a>
-        <a href="about.html">О нас</a>
-    </nav>
+<nav>
+    <a href="index.html">Главная</a>
+    <a href="tracks.html">Треки</a>
+    <a href="albums.html">Альбомы</a>
+    <a href="artists.html">Артисты</a>
+    <a href="about.html">О нас</a>
+</nav>
 
-    <header>
-        <div class="search-bar">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="Поиск...">
-        </div>
-        <div class="auth-buttons">
-            <a href="login.html"><button>Войти</button></a>
-            <a href="register.html"><button>Регистрация</button></a>
-        </div>
-    </header>
-
-    <div class="content">
-        <div class="about-content">
-            <h2>О нас</h2>
-            <p>
-                Добро пожаловать на наш музыкальный портал! Мы создали этот сайт для всех, кто любит музыку и хочет быть в курсе последних новинок, альбомов и артистов.
-            </p>
-            <p>
-                Наша команда состоит из энтузиастов, которые стремятся сделать мир музыки более доступным и интересным. Мы предлагаем вам уникальную возможность открывать для себя новые треки, следить за любимыми исполнителями и делиться своими впечатлениями.
-            </p>
-            <p>
-                Присоединяйтесь к нашему сообществу и наслаждайтесь миром музыки вместе с нами!
-            </p>
-        </div>
+<header>
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Поиск...">
     </div>
+    <div class="auth-buttons" id="authButtons">
+        <a href="login.html"><button>Войти</button></a>
+        <a href="register.html"><button>Регистрация</button></a>
+    </div>
+    <div class="user-info" id="userInfo" style="display: none;">
+        <span id="userName"></span>
+        <button id="logoutButton">Выйти</button>
+    </div>
+</header>
+
+<div class="content">
+    <div class="about-content">
+        <h2>О нас</h2>
+        <p>
+            Добро пожаловать на наш музыкальный портал! Мы создали этот сайт для всех, кто любит музыку и хочет быть в курсе последних новинок, альбомов и артистов.
+        </p>
+        <p>
+            Наша команда состоит из энтузиастов, которые стремятся сделать мир музыки более доступным и интересным. Мы предлагаем вам уникальную возможность открывать для себя новые треки, следить за любимыми исполнителями и делиться своими впечатлениями.
+        </p>
+        <p>
+            Присоединяйтесь к нашему сообществу и наслаждайтесь миром музыки вместе с нами!
+        </p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('token');
+        const authButtons = document.getElementById('authButtons');
+        const userInfo = document.getElementById('userInfo');
+        const userName = document.getElementById('userName');
+        const logoutButton = document.getElementById('logoutButton');
+        const searchInput = document.getElementById('searchInput');
+
+        // Проверка авторизации
+        if (token) {
+            const decodedToken = JSON.parse(atob(token.split('.')[1]));
+            userName.textContent = decodedToken.email;
+            authButtons.style.display = 'none';
+            userInfo.style.display = 'flex';
+        } else {
+            authButtons.style.display = 'flex';
+            userInfo.style.display = 'none';
+        }
+
+        // Обработка выхода
+        logoutButton.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        });
+
+        // Обработка поиска
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.trim();
+                if (query) {
+                    window.location.href = `search.html?query=${encodeURIComponent(query)}`;
+                }
+            }
+        });
+    });
+</script>
 </body>
 </html>
