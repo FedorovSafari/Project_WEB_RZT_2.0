@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Артисты</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Основные стили остаются такими же, как на главной странице */
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: black;
+            border-bottom: 1px solid #444;
+            margin-left: 120px;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 40px;
+            z-index: 1000;
+        }
+        .search-bar {
+            width: 20%;
+            margin-right: auto;
+            margin-left: 500px;
+            position: relative;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 8px 10px 8px 30px;
+            background-color: #333;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 20px;
+            font-family: 'Inter', sans-serif;
+        }
+        .search-bar i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            cursor: pointer;
+        }
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .auth-buttons button {
+            background-color: white;
+            color: black;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 20px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .auth-buttons button:hover {
+            background-color: #ddd;
+        }
+        nav {
+            width: 120px;
+            background-color: black;
+            padding: 20px;
+            height: 100vh;
+            border-right: 1px solid #444;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1001;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            margin: 15px 0;
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+            margin-left: 160px;
+            margin-top: 60px;
+        }
+        .artists-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .artist {
+            width: 200px;
+            background-color: #333;
+            border: 1px solid #444;
+            border-radius: 12px;
+            overflow: hidden;
+            text-align: center;
+            padding: 15px;
+        }
+        .artist img {
+            width: 100%;
+            height: auto;
+            border-bottom: 1px solid #444;
+        }
+        .artist h3 {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .artist p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html">Главная</a>
+        <a href="tracks.html">Треки</a>
+        <a href="albums.html">Альбомы</a>
+        <a href="artists.html">Артисты</a>
+        <a href="about.html">О нас</a>
+    </nav>
+
+    <header>
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Поиск...">
+        </div>
+        <div class="auth-buttons">
+            <a href="login.html"><button>Войти</button></a>
+            <a href="register.html"><button>Регистрация</button></a>
+        </div>
+    </header>
+
+    <div class="content">
+        <h2>Артисты</h2>
+        <div class="artists-container">
+            <div class="artist">
+                <img src="https://via.placeholder.com/200" alt="Фото артиста">
+                <h3>Имя артиста 1</h3>
+                <p>Жанр: Поп</p>
+            </div>
+            <div class="artist">
+                <img src="https://via.placeholder.com/200" alt="Фото артиста">
+                <h3>Имя артиста 2</h3>
+                <p>Жанр: Рок</p>
+            </div>
+            <div class="artist">
+                <img src="https://via.placeholder.com/200" alt="Фото артиста">
+                <h3>Имя артиста 3</h3>
+                <p>Жанр: Хип-хоп</p>
+            </div>
+            <div class="artist">
+                <img src="https://via.placeholder.com/200" alt="Фото артиста">
+                <h3>Имя артиста 4</h3>
+                <p>Жанр: Электроника</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
