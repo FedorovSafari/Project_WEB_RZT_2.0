@@ -236,7 +236,7 @@
         if (query) {
             searchInput.value = query;
             try {
-                const response = await fetch(`http://localhost:5000/api/search?query=${encodeURIComponent(query)}`);
+                const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
                 if (!response.ok) {
                     throw new Error('Ошибка при поиске');
                 }

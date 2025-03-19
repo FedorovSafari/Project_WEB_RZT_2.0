@@ -74,16 +74,20 @@
 <div class="register-container">
     <h2>Регистрация</h2>
     <div id="errorMessage" class="error-message"></div>
-    <input type="text" id="name" placeholder="Имя">
-    <input type="text" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Пароль">
-    <button id="registerButton">Зарегистрироваться</button>
+    <form id="registerForm">
+        <input type="text" id="name" name="name" placeholder="Имя" required>
+        <input type="email" id="email" name="email" placeholder="Email" required>
+        <input type="password" id="password" name="password" placeholder="Пароль" required>
+        <button type="submit">Зарегистрироваться</button>
+    </form>
     <a href="login.html">Уже есть аккаунт? Войдите</a>
     <a href="index.html">Вернуться на главную</a>
 </div>
 
 <script>
-    document.getElementById('registerButton').addEventListener('click', async () => {
+    document.getElementById('registerForm').addEventListener('submit', async (event) => {
+        event.preventDefault(); // Предотвращаем стандартное поведение формы
+
         const name = document.getElementById('name').value;
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -91,13 +95,8 @@
 
         errorMessage.textContent = ''; // Очищаем сообщение об ошибке
 
-        if (!name || !email || !password) {
-            errorMessage.textContent = 'Пожалуйста, заполните все поля.';
-            return;
-        }
-
         try {
-            const response = await fetch('http://localhost:5000/api/user/registration', {
+            const response = await fetch('/api/user/registration', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

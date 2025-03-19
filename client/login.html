@@ -74,28 +74,27 @@
 <div class="login-container">
     <h2>Вход</h2>
     <div id="errorMessage" class="error-message"></div>
-    <input type="text" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Пароль">
-    <button id="loginButton">Войти</button>
+    <form id="loginForm">
+        <input type="email" id="email" name="email" placeholder="Email" required>
+        <input type="password" id="password" name="password" placeholder="Пароль" required>
+        <button type="submit">Войти</button>
+    </form>
     <a href="register.html">Нет аккаунта? Зарегистрируйтесь</a>
     <a href="index.html">Вернуться на главную</a>
 </div>
 
 <script>
-    document.getElementById('loginButton').addEventListener('click', async () => {
+    document.getElementById('loginForm').addEventListener('submit', async (event) => {
+        event.preventDefault(); // Предотвращаем стандартное поведение формы
+
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const errorMessage = document.getElementById('errorMessage');
 
         errorMessage.textContent = ''; // Очищаем сообщение об ошибке
 
-        if (!email || !password) {
-            errorMessage.textContent = 'Пожалуйста, заполните все поля.';
-            return;
-        }
-
         try {
-            const response = await fetch('http://localhost:5000/api/user/login', {
+            const response = await fetch('/api/user/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
