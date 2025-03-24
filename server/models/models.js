@@ -11,8 +11,8 @@ const User = sequelize.define('User', {
 const Track = sequelize.define('Track', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     title: {type: DataTypes.STRING, allowNull: false},
-    duration: {type: DataTypes.INTEGER, allowNull: false},
-    date: {type: DataTypes.DATE, allowNull: false},
+    duration: {type: DataTypes.FLOAT, allowNull: false}, // продолжительность трека
+    date: {type: DataTypes.DATE, allowNull: false}, // дата выхода трека
     audioFile: {type: DataTypes.STRING, allowNull: false},
     img: {type: DataTypes.STRING, allowNull: false},
 })
@@ -26,31 +26,34 @@ const Album = sequelize.define('Album', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     title: {type: DataTypes.STRING, allowNull: false},
     duration: {type: DataTypes.INTEGER, allowNull: false},
-    date: {type: DataTypes.DATE, allowNull: false},
-    audioFile: {type: DataTypes.STRING, allowNull: false},
+    date: {type: DataTypes.DATE, allowNull: false}, // дата выхода альбома
     img: {type: DataTypes.STRING, allowNull: false},
 })
 
 const Artist = sequelize.define('Artist', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     name: {type: DataTypes.STRING, allowNull: false},
-    bio: {type: DataTypes.STRING, allowNull: false},
+    bio: {type: DataTypes.TEXT, allowNull: false},
     img: {type: DataTypes.STRING, allowNull: false},
 })
 
-Artist.hasMany(Track)
-Track.belongsTo(Artist)
+Artist.hasMany(Track);
+Track.belongsTo(Artist);
 
-Genre.belongsTo(Track)
-Track.belongsTo(Genre)
+Genre.hasMany(Track);
+Track.belongsTo(Genre);
 
-Artist.hasMany(Album)
-Album.belongsTo(Artist)
+Artist.hasMany(Album);
+Album.belongsTo(Artist);
 
-Genre.belongsTo(Album)
-Album.belongsTo(Genre)
+Genre.hasMany(Album);
+Album.belongsTo(Genre);
 
+Album.hasMany(Track);
+Track.belongsTo(Album);
 
+Artist.belongsToMany(Genre, { through: 'ArtistGenre' });
+Genre.belongsToMany(Artist, { through: 'ArtistGenre' });
 
 
 module.exports = {
