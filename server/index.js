@@ -38,13 +38,13 @@ app.use((req, res, next) => {
 // Обработка ошибок (последний middleware)
 app.use(errorHandler);
 
-//const { fetchAndSaveArtists } = require('./API/loading_artist');
-//const { fetchAndSaveGenres } = require('./API/loading_genre');
-//const { fetchAndSaveTracks } = require('./API/loading_track');
-//const { fetchAndSaveAlbums } = require('./API/loading_album');
+const { fetchAndSaveArtists } = require('./API/loading_artist');
+const { fetchAndSaveGenres } = require('./API/loading_genre');
+const { fetchAndSaveTracks } = require('./API/loading_track');
+const { fetchAndSaveAlbums } = require('./API/loading_album');
 
-//const artistNames = ['boulevard depo'];
-//const tracksLimit = 10;
+const artistNames = ['boulevard depo','Lida'];
+const tracksLimit = 10;
 
 // Запуск приложения
 const start = async () => {
@@ -52,10 +52,12 @@ const start = async () => {
         await sequelize.authenticate();
         await sequelize.sync({ alter: true }); // Используйте force: true только для разработки!
 
-        app.listen(PORT, () => console.log(Сервер запущен на порту ${PORT}));
+        app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
 
         // Загружаем данные артистов после старта сервера
         await fetchAndSaveArtists(artistNames);
+
+        await fetchAndSaveTracks(artistNames, tracksLimit);
 
         // Загружаем жанры после старта сервера
         await fetchAndSaveGenres();

@@ -46,7 +46,7 @@ module.exports = {
 
             const albums = await Album.findAll({
                 order: [['date', 'DESC']],
-                limit: limit,
+                //limit: limit,
                 include: [{
                     model: Artist,
                     attributes: ['id', 'name', 'img']
@@ -64,7 +64,7 @@ module.exports = {
      */
     getRecentReleases: async (req, res, next) => {
         try {
-            const limit = req.query.limit ? Math.min(parseInt(req.query.limit), 20) : 6;
+            const limit = 6;
 
             const [tracks, albums] = await Promise.all([
                 Track.findAll({
@@ -109,7 +109,7 @@ module.exports = {
 
             const artists = await Artist.findAll({
                 order: [['createdAt', 'DESC']],
-                limit: limit,
+                //limit: limit,
                 attributes: ['id', 'name', 'img', 'description']
             });
 

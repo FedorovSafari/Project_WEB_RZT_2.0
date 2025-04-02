@@ -297,7 +297,7 @@
             // Функция загрузки треков
             async function loadTracks() {
                 try {
-                    const response = await fetch('/api/tracks/recent?limit=6', {
+                    const response = await fetch('/api/releases/recent', {
                         credentials: 'include'
                     });
 
