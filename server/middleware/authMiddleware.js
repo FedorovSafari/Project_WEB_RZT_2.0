@@ -1,20 +1,22 @@
-const jws = require("jsonwebtoken")
+const jwt = require('jsonwebtoken');
+const ApiError = require('../error/ApiError');
 
-module.exports = function (req, res, next) {
-    if (req.method === 'OPTIONS') {
-        next()
-    }
+module.exports = function(req, res, next) {
     try {
-        const token = req.headers.authorization.split(' ')[1]
+        // Получаем токен из куков
+        const token = req.cookies.token;
+
         if (!token) {
-            return res.status(401).json({message: "Не авторизован"})
+            return next(ApiError.unauthorized('Не авторизован'));
         }
-        const decoded = jws.verify(token, process.env.SECRET_KEY)
-        req.user = decoded
-        next()
-    } catch (e) {
-        res.status(401).json({message: "Не авторизован"})
+
+        // Верифицируем токен
+        req.user = jwt.verify(token, process.env.SECRET_KEY);
+
+        next();
+    } catch (error) {
+        // Если токен невалидный - очищаем куку
+        res.clearCookie('authToken');
+        return next(ApiError.unauthorized('Не авторизован'));
     }
-
-
 };

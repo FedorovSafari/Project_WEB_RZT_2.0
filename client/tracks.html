@@ -235,7 +235,7 @@
 
         // Загрузка треков
         try {
-            const response = await fetch('/api/tracks/recent');
+            const response = await fetch('/api/tracks');
             if (!response.ok) {
                 throw new Error('Ошибка при загрузке треков');
             }
@@ -255,7 +255,7 @@
                     <img src="${track.img}" alt="Обложка трека">
                     <div class="track-info">
                         <h3>${track.title}</h3>
-                        <p>${track.Artist ? track.Artist.name : 'Неизвестный автор'}</p>
+                        <p>${track.artist || 'Неизвестный автор'}</p>
                     </div>
                 `;
                 div.addEventListener('click', () => {
