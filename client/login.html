@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход | Музыкальный портал</title>
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .auth-container {
+            background-color: rgba(40, 40, 40, 0.9);
+            padding: 40px;
+            border-radius: 16px;
+            width: 380px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .auth-header p {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .auth-form .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 14px 16px;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .auth-form input:focus {
+            outline: none;
+            border-color: #1DB954;
+            background-color: rgba(29, 185, 84, 0.1);
+        }
+
+        .auth-form button {
+            width: 100%;
+            padding: 14px;
+            background-color: #1DB954;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .auth-form button:hover {
+            background-color: #1ed760;
+        }
+
+        .auth-footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .auth-footer a {
+            color: #1DB954;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #ff4d4d;
+            font-size: 14px;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .error-message i {
+            font-size: 16px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            color: #aaa;
+            cursor: pointer;
+        }
+
+        .loading .button-text {
+            display: none;
+        }
+
+        .loading .button-spinner {
+            display: inline-block;
+        }
+
+        .button-spinner {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="auth-container">
+    <div class="auth-header">
+        <h2>С возвращением!</h2>
+        <p>Войдите в свой аккаунт, чтобы продолжить</p>
+    </div>
+
+    <form id="loginForm" class="auth-form">
+        <div class="input-group">
+            <label for="email"> </label><input type="email" id="email" name="email" placeholder="Email" required>
+        </div>
+
+        <div class="input-group">
+            <label for="password"></label><input type="password" id="password" name="password" placeholder="Пароль" required>
+            <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+        </div>
+
+        <div id="errorMessage" class="error-message" style="display: none;">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="errorText"></span>
+        </div>
+
+        <button type="submit" id="loginButton">
+            <span class="button-text">Войти</span>
+            <span class="button-spinner"><i class="fas fa-spinner fa-spin"></i></span>
+        </button>
+    </form>
+
+    <div class="auth-footer">
+        <p>Нет аккаунта? <a href="register.html">Зарегистрируйтесь</a></p>
+        <p><a href="forgot-password.html">Забыли пароль?</a></p>
+        <p><a href="index.html"><i class="fas fa-arrow-left"></i> Вернуться на главную</a></p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const loginForm = document.getElementById('loginForm');
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const loginButton = document.getElementById('loginButton');
+
+        // Переключение видимости пароля
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.classList.toggle('fa-eye-slash');
+        });
+
+        // Обработка отправки формы
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Показываем индикатор загрузки
+            loginButton.classList.add('loading');
+            loginButton.disabled = true;
+            errorMessage.style.display = 'none';
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/user/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Ошибка при входе');
+                }
+
+                // Успешный вход - перенаправляем на главную
+                window.location.href = '/index.html';
+
+            } catch (error) {
+                console.error('Ошибка входа:', error);
+                errorText.textContent = error.message || 'Произошла ошибка при входе';
+                errorMessage.style.display = 'flex';
+            } finally {
+                // Восстанавливаем кнопку
+                loginButton.classList.remove('loading');
+                loginButton.disabled = false;
+            }
+        });
+
+        // Сброс ошибок при изменении данных
+        loginForm.addEventListener('input', () => {
+            if (errorMessage.style.display !== 'none') {
+                errorMessage.style.display = 'none';
+            }
+        });
+    });
+</script>
+</body>
+</html>

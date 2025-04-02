@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Треки</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Основные стили */
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px; /* Исходный размер */
+            background-color: black;
+            border-bottom: 1px solid #444;
+            margin-left: 120px; /* Исходный размер */
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 40px; /* Исходный размер */
+            z-index: 1000;
+        }
+        .search-bar {
+            width: 20%; /* Исходный размер */
+            margin-right: auto;
+            margin-left: 500px; /* Исходный размер */
+            position: relative;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 8px 10px 8px 30px; /* Исходный размер */
+            background-color: #333;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 20px; /* Исходный размер */
+            font-family: 'Inter', sans-serif;
+            font-size: 14px; /* Исходный размер */
+        }
+        .search-bar i {
+            position: absolute;
+            left: 10px; /* Исходный размер */
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            cursor: pointer;
+            font-size: 14px; /* Исходный размер */
+        }
+        .auth-buttons {
+            display: flex;
+            gap: 10px; /* Исходный размер */
+        }
+        .auth-buttons button {
+            background-color: white;
+            color: black;
+            border: none;
+            padding: 8px 16px; /* Исходный размер */
+            cursor: pointer;
+            border-radius: 20px; /* Исходный размер */
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 14px; /* Исходный размер */
+            transition: background-color 0.3s ease;
+        }
+        .auth-buttons button:hover {
+            background-color: #ddd;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Исходный размер */
+        }
+        .user-info span {
+            color: white;
+            font-size: 14px; /* Исходный размер */
+        }
+        .user-info button {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 8px 16px; /* Исходный размер */
+            border-radius: 20px; /* Исходный размер */
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 14px; /* Исходный размер */
+            transition: background-color 0.3s ease;
+        }
+        .user-info button:hover {
+            background-color: #cc0000;
+        }
+        nav {
+            width: 120px; /* Исходный размер */
+            background-color: black;
+            padding: 20px; /* Исходный размер */
+            height: 100vh;
+            border-right: 1px solid #444;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1001;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            margin: 15px 0; /* Исходный размер */
+            font-size: 12px; /* Исходный размер */
+            font-family: 'Inter', sans-serif;
+        }
+        .content {
+            flex: 1;
+            padding: 20px; /* Исходный размер */
+            margin-left: 160px; /* Исходный размер */
+            margin-top: 60px; /* Исходный размер */
+        }
+        .track-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Увеличено */
+        }
+        .track-item {
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Увеличено */
+            padding: 20px; /* Увеличено */
+            background-color: #333;
+            border-radius: 12px; /* Увеличено */
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .track-item:hover {
+            background-color: #444;
+        }
+        .track-item img {
+            width: 80px; /* Увеличено */
+            height: 80px; /* Увеличено */
+            border-radius: 12px; /* Увеличено */
+            object-fit: cover;
+        }
+        .track-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Увеличено */
+        }
+        .track-info h3 {
+            margin: 0;
+            font-size: 20px; /* Увеличено */
+            font-weight: 700;
+        }
+        .track-info p {
+            margin: 0;
+            font-size: 16px; /* Увеличено */
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <a href="index.html">Главная</a>
+    <a href="tracks.html">Треки</a>
+    <a href="albums.html">Альбомы</a>
+    <a href="artists.html">Артисты</a>
+    <a href="about.html">О нас</a>
+</nav>
+
+<header>
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Поиск...">
+    </div>
+    <div class="auth-buttons" id="authButtons">
+        <a href="login.html"><button>Войти</button></a>
+        <a href="register.html"><button>Регистрация</button></a>
+    </div>
+    <div class="user-info" id="userInfo" style="display: none;">
+        <span id="userName"></span>
+        <button id="logoutButton">Выйти</button>
+    </div>
+</header>
+
+<div class="content">
+    <h2>Треки</h2>
+    <div class="track-list" id="trackList">
+        <!-- Треки будут загружены сюда -->
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const token = localStorage.getItem('token');
+        const authButtons = document.getElementById('authButtons');
+        const userInfo = document.getElementById('userInfo');
+        const userName = document.getElementById('userName');
+        const logoutButton = document.getElementById('logoutButton');
+        const searchInput = document.getElementById('searchInput');
+        const trackList = document.getElementById('trackList');
+
+        // Проверка авторизации
+        if (token) {
+            const decodedToken = JSON.parse(atob(token.split('.')[1]));
+            userName.textContent = decodedToken.email;
+            authButtons.style.display = 'none';
+            userInfo.style.display = 'flex';
+        } else {
+            authButtons.style.display = 'flex';
+            userInfo.style.display = 'none';
+        }
+
+        // Обработка выхода
+        logoutButton.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        });
+
+        // Обработка поиска
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.trim();
+                if (query) {
+                    window.location.href = `search.html?query=${encodeURIComponent(query)}`;
+                }
+            }
+        });
+
+        // Загрузка треков
+        try {
+            const response = await fetch('/api/tracks');
+            if (!response.ok) {
+                throw new Error('Ошибка при загрузке треков');
+            }
+            const tracks = await response.json();
+            displayTracks(tracks);
+        } catch (error) {
+            console.error('Ошибка:', error);
+        }
+
+        // Отображение треков
+        function displayTracks(tracks) {
+            trackList.innerHTML = ''; // Очищаем контейнер
+            tracks.forEach(track => {
+                const div = document.createElement('div');
+                div.className = 'track-item';
+                div.innerHTML = `
+                    <img src="${track.img}" alt="Обложка трека">
+                    <div class="track-info">
+                        <h3>${track.title}</h3>
+                        <p>${track.artist || 'Неизвестный автор'}</p>
+                    </div>
+                `;
+                div.addEventListener('click', () => {
+                    if (token) {
+                        window.location.href = `track.html?id=${track.id}`; // Переход на страницу трека
+                    } else {
+                        window.location.href = 'login.html'; // Переход на страницу входа
+                    }
+                });
+                trackList.appendChild(div);
+            });
+        }
+    });
+</script>
+</body>
+</html>

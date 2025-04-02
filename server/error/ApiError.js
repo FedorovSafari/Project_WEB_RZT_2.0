@@ -13,6 +13,11 @@ class ApiError extends Error {
         return new ApiError(500, message)
     }
 
+    static unauthorized(message = 'Не авторизован', errors = []) {
+        return new ApiError(401, message, errors);
+    }
+
+
     static forbidden(message) {
         return new ApiError(403, message)
     }
