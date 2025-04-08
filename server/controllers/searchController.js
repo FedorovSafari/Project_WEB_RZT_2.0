@@ -13,7 +13,7 @@ async function searchTracks(query) {
                 { model: Artist, attributes: ['name'] }, // Включаем информацию об артисте
                 { model: Genre, attributes: ['name'] },   // Включаем информацию о жанре
             ],
-            limit: 10, // Ограничиваем количество результатов
+            limit: 6, // Ограничиваем количество результатов
         });
         return tracks;
     } catch (error) {
@@ -35,7 +35,7 @@ async function searchAlbums(query) {
                 { model: Artist, attributes: ['name'] }, // Включаем информацию об артисте
                 { model: Genre, attributes: ['name'] }, // Включаем информацию о жанре
             ],
-            limit: 10, // Ограничиваем количество результатов
+            limit: 6, // Ограничиваем количество результатов
         });
         return albums;
     } catch (error) {
@@ -53,7 +53,7 @@ async function searchArtists(query) {
                     [Op.iLike]: `%${query}%`, // Поиск по имени артиста (регистронезависимый)
                 },
             },
-            limit: 10, // Ограничиваем количество результатов
+            limit: 6, // Ограничиваем количество результатов
         });
         return artists;
     } catch (error) {

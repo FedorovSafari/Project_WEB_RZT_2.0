@@ -80,6 +80,8 @@ class UserController {
             // Генерация токена
             const token = generateJWT(user.id, user.email, user.role);
 
+            console.log("перед куками")
+
             // Установка HTTP-only куки
             res.cookie('authToken', token, {
                 httpOnly: true,
@@ -87,6 +89,7 @@ class UserController {
                 maxAge: 24 * 60 * 60 * 1000, // 24 часа
                 sameSite: 'strict'
             });
+            console.log("после кук ",token)
 
             return res.json({
                 user: {
@@ -103,8 +106,10 @@ class UserController {
 
     async check(req, res, next) {
         try {
+            console.log("")
             // Пользователь уже доступен через middleware
             const token = generateJWT(req.user.id, req.user.email, req.user.role);
+            console.log(req.user.id, req.user.email, req.user.role)
 
             // Обновляем куку
             res.cookie('authToken', token, {

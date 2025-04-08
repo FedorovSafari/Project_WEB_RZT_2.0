@@ -7,10 +7,10 @@ const errorHandler = require('./middleware/ErrorHandingMiddleware');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const app = express();
-const PORT = process.env.PORT || 6000;
+const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:6000',
+    origin: process.env.CLIENT_URL || 'http://localhost:5000',
     credentials: true
 }));
 app.use(cookieParser());
@@ -38,13 +38,13 @@ app.use((req, res, next) => {
 // Обработка ошибок (последний middleware)
 app.use(errorHandler);
 
-const { fetchAndSaveArtists } = require('./API/loading_artist');
-const { fetchAndSaveGenres } = require('./API/loading_genre');
-const { fetchAndSaveTracks } = require('./API/loading_track');
-const { fetchAndSaveAlbums } = require('./API/loading_album');
+//const { fetchAndSaveArtists } = require('./API/loading_artist');
+//const { fetchAndSaveGenres } = require('./API/loading_genre');
+//const { fetchAndSaveTracks } = require('./API/loading_track');
+//const { fetchAndSaveAlbums } = require('./API/loading_album');
 
-const artistNames = ['boulevard depo','Lida'];
-const tracksLimit = 10;
+//const artistNames = ['boulevard depo','Lida'];
+//const tracksLimit = 10;
 
 // Запуск приложения
 const start = async () => {
@@ -55,17 +55,17 @@ const start = async () => {
         app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
 
         // Загружаем данные артистов после старта сервера
-        await fetchAndSaveArtists(artistNames);
+        //await fetchAndSaveArtists(artistNames);
 
-        await fetchAndSaveTracks(artistNames, tracksLimit);
+        //await fetchAndSaveTracks(artistNames, tracksLimit);
 
         // Загружаем жанры после старта сервера
-        await fetchAndSaveGenres();
+        //await fetchAndSaveGenres();
 
         // Загружаем альбомы для каждого артиста
-        for (const artistName of artistNames) {
-            await fetchAndSaveAlbums(artistName);
-        }
+        //for (const artistName of artistNames) {
+        //    await fetchAndSaveAlbums(artistName);
+        //}
 
     } catch (e) {
         console.error('Ошибка запуска сервера:', e);
