@@ -4,7 +4,9 @@ const ApiError = require('../error/ApiError');
 module.exports = function(req, res, next) {
     try {
         // Получаем токен из куков
-        const token = req.cookies.token;
+        const token = req.cookies.authToken;
+        console.log('All cookies:', req.cookies);
+        console.log('AuthToken:', req.cookies.authToken);
 
         if (!token) {
             return next(ApiError.unauthorized('Не авторизован'));

@@ -52,10 +52,9 @@
             top: 50%;
             transform: translateY(-50%);
             color: #888;
-            cursor: pointer;
         }
         .auth-buttons {
-            display: flex;
+            display: none; /* Скрыто по умолчанию */
             gap: 10px;
         }
         .auth-buttons button {
@@ -73,7 +72,7 @@
             background-color: #ddd;
         }
         .user-info {
-            display: flex;
+            display: none; /* Скрыто по умолчанию */
             align-items: center;
             gap: 10px;
         }
@@ -257,7 +256,7 @@
             // Функция проверки авторизации
             async function checkAuth() {
                 try {
-                    const response = await fetch('/api/auth/check', {
+                    const response = await fetch('/api/user/auth', {
                         method: 'GET',
                         credentials: 'include',
                         headers: {
@@ -284,7 +283,7 @@
             // Функция выхода
             async function logout() {
                 try {
-                    await fetch('/api/auth/logout', {
+                    await fetch('/api/user/logout', {
                         method: 'POST',
                         credentials: 'include'
                     });
@@ -297,7 +296,7 @@
             // Функция загрузки треков
             async function loadTracks() {
                 try {
-                    const response = await fetch('/api/tracks/recent?limit=6', {
+                    const response = await fetch('/api/releases/recent', {
                         credentials: 'include'
                     });
 

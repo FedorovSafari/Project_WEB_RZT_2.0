@@ -1,6 +1,7 @@
 const { Track, Album, Artist } = require('../models/models');
 const ApiError = require('../error/ApiError');
 const {Op} = require("sequelize");
+const {searchArtists, searchAlbums, searchTracks} = require('./searchController')
 
 module.exports = {
     /**
@@ -46,7 +47,7 @@ module.exports = {
 
             const albums = await Album.findAll({
                 order: [['date', 'DESC']],
-                limit: limit,
+                //limit: limit,
                 include: [{
                     model: Artist,
                     attributes: ['id', 'name', 'img']
@@ -64,7 +65,7 @@ module.exports = {
      */
     getRecentReleases: async (req, res, next) => {
         try {
-            const limit = req.query.limit ? Math.min(parseInt(req.query.limit), 20) : 6;
+            const limit = 6;
 
             const [tracks, albums] = await Promise.all([
                 Track.findAll({
@@ -106,12 +107,13 @@ module.exports = {
     getRecentArtists: async (req, res, next) => {
         try {
             const limit = req.query.limit ? Math.min(parseInt(req.query.limit), 50) : 10;
-
+            console.log('artist')
             const artists = await Artist.findAll({
-                order: [['createdAt', 'DESC']],
-                limit: limit,
-                attributes: ['id', 'name', 'img', 'description']
+                //order: [['name', 'DESC']],
+                //limit: limit,
+                attributes: ['id', 'name', 'img', 'bio']
             });
+            console.log(artists)
 
             res.json(artists);
         } catch (error) {
@@ -120,10 +122,125 @@ module.exports = {
     },
 
     /**
+     * Получение артиста по ID
+     */
+    getArtistById: async (req, res, next) => {
+        try {
+            const artist = await Artist.findByPk(req.params.id, {
+                include: [
+                    {
+                        model: Track,
+                        as: 'tracks',
+                        attributes: ['id'],
+                        required: false
+                    },
+                    {
+                        model: Album,
+                        as: 'albums',
+                        attributes: ['id'],
+                        required: false
+                    }
+                ]
+            });
+
+            if (!artist) {
+                return next(ApiError.badRequest('Артист не найден'));
+            }
+
+            // Подсчет статистики
+            const trackCount = artist.tracks?.length || 0;
+            const albumCount = artist.albums?.length || 0;
+
+            // Получаем общее количество прослушиваний
+            const plays = await Track.sum('plays', {
+                where: { artistId: artist.id }
+            }) || 0;
+
+            res.json({
+                ...artist.get({ plain: true }),
+                trackCount,
+                albumCount,
+                plays
+            });
+        } catch (error) {
+            next(ApiError.internal('Ошибка при загрузке артиста'));
+        }
+    },
+
+    /**
+     * Получение треков артиста
+     */
+    getArtistTracks: async (req, res, next) => {
+        try {
+            const { limit = 5, sort = 'popular' } = req.query;
+
+            const order = [];
+            if (sort === 'popular') {
+                order.push(['plays', 'DESC']);
+            } else if (sort === 'newest') {
+                order.push(['date', 'DESC']);
+            }
+
+            const tracks = await Track.findAll({
+                where: { artistId: req.params.id },
+                include: [
+                    {
+                        model: Album,
+                        as: 'album',
+                        attributes: ['id', 'title', 'img']
+                    },
+                    {
+                        model: Artist,
+                        attributes: ['id', 'name', 'img']
+                    }
+                ],
+                order,
+                limit: parseInt(limit),
+                attributes: ['id', 'title', 'plays', 'duration', 'img', 'date']
+            });
+
+            res.json(tracks.map(track => ({
+                ...track.get({ plain: true }),
+                artist: track.Artist,
+                album: track.album
+            })));
+        } catch (error) {
+            next(ApiError.internal('Ошибка при загрузке треков артиста'));
+        }
+    },
+
+    /**
+     * Получение альбомов артиста
+     */
+    getArtistAlbums: async (req, res, next) => {
+        try {
+            const albums = await Album.findAll({
+                where: { artistId: req.params.id },
+                include: [
+                    {
+                        model: Artist,
+                        attributes: ['id', 'name', 'img']
+                    }
+                ],
+                attributes: ['id', 'title', 'img', 'date', 'type'],
+                order: [['date', 'DESC']]
+            });
+
+            res.json(albums.map(album => ({
+                ...album.get({ plain: true }),
+                artist: album.Artist
+            })));
+        } catch (error) {
+            next(ApiError.internal('Ошибка при загрузке альбомов артиста'));
+        }
+    },
+
+    /**
      * Получение трека по ID
      */
     getTrackById: async (req, res, next) => {
         try {
+            console.log('id: ',req.params)
             const track = await Track.findByPk(req.params.id, {
                 include: [{
                     model: Artist,
@@ -132,7 +249,7 @@ module.exports = {
             });
 
             if (!track) {
-                return next(ApiError.notFound('Трек не найден'));
+                return next(ApiError.badRequest('Трек не найден'));
             }
 
             res.json(track);
@@ -175,47 +292,13 @@ module.exports = {
             }
 
             const searchQuery = `%${query}%`;
-
+            console.log('Search', searchQuery)
             const [tracks, albums, artists] = await Promise.all([
-                // Поиск треков
-                Track.findAll({
-                    where: {
-                        title: {
-                            [Op.iLike]: searchQuery
-                        }
-                    },
-                    limit: 10,
-                    include: [{
-                        model: Artist,
-                        attributes: ['id', 'name']
-                    }]
-                }),
-
-                // Поиск альбомов
-                Album.findAll({
-                    where: {
-                        [Op.or]: [
-                            { title: { [Op.iLike]: searchQuery } },
-                            { description: { [Op.iLike]: searchQuery } }
-                        ]
-                    },
-                    limit: 10,
-                    include: [{
-                        model: Artist,
-                        attributes: ['id', 'name']
-                    }]
-                }),
-
-                // Поиск артистов
-                Artist.findAll({
-                    where: {
-                        name: {
-                            [Op.iLike]: searchQuery
-                        }
-                    },
-                    limit: 10
-                })
+                searchTracks(searchQuery),
+                searchAlbums(searchQuery),
+                searchArtists(searchQuery)
             ]);
+            console.log('Search2', searchQuery)
 
             res.json({
                 tracks: tracks.map(t => t.get({ plain: true })),

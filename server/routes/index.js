@@ -9,7 +9,10 @@ const {
     getRecentArtists,
     getTrackById,
     searchAll,
-    getAllTracks
+    getAllTracks,
+    getArtistById,
+    getArtistTracks,
+    getArtistAlbums
 } = require('../controllers/trackController');
 
 const UserRouter = require('./UserRouter');
@@ -24,6 +27,9 @@ router.get('/albums/recent', getRecentAlbums);
 
 // Маршруты для артистов
 router.get('/artists/recent', getRecentArtists);
+router.get('/artists/:id', getArtistById);
+router.get('/artists/:id/tracks', getArtistTracks);
+router.get('/artists/:id/albums', getArtistAlbums);
 
 // Комбинированные релизы
 router.get('/releases/recent', getRecentReleases);

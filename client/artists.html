@@ -52,10 +52,9 @@
             top: 50%;
             transform: translateY(-50%);
             color: #888;
-            cursor: pointer;
         }
         .auth-buttons {
-            display: flex;
+            display: none; /* Скрыто по умолчанию */
             gap: 10px;
         }
         .auth-buttons button {
@@ -73,7 +72,7 @@
             background-color: #ddd;
         }
         .user-info {
-            display: flex;
+            display: none; /* Скрыто по умолчанию */
             align-items: center;
             gap: 10px;
         }
@@ -195,22 +194,45 @@
         const searchInput = document.getElementById('searchInput');
         const artistsContainer = document.getElementById('artists');
 
-        // Проверка авторизации
-        if (token) {
-            const decodedToken = JSON.parse(atob(token.split('.')[1]));
-            userName.textContent = decodedToken.email;
-            authButtons.style.display = 'none';
-            userInfo.style.display = 'flex';
-        } else {
-            authButtons.style.display = 'flex';
-            userInfo.style.display = 'none';
+        // Функция проверки авторизации
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/user/auth', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.user;
+                }
+
+                if (response.status === 401) {
+                    return null;
+                }
+
+                throw new Error('Ошибка проверки авторизации');
+            } catch (error) {
+                console.error('Auth check error:', error);
+                return null;
+            }
         }
 
-        // Обработка выхода
-        logoutButton.addEventListener('click', () => {
-            localStorage.removeItem('token');
-            window.location.href = 'index.html';
-        });
+        // Функция выхода
+        async function logout() {
+            try {
+                await fetch('/api/user/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Ошибка при выходе:', error);
+            }
+        }
 
         // Обработка поиска
         searchInput.addEventListener('keypress', (e) => {
@@ -254,6 +276,39 @@
                 artistsContainer.appendChild(div);
             });
         }
+        // Обновление UI в зависимости от статуса авторизации
+        async function updateAuthUI() {
+            const user = await checkAuth();
+
+            if (user) {
+                userName.textContent = user.email;
+                authButtons.style.display = 'none';
+                userInfo.style.display = 'flex';
+            } else {
+                authButtons.style.display = 'flex';
+                userInfo.style.display = 'none';
+            }
+        }
+
+        async function init() {
+            await updateAuthUI();
+        }
+
+        // Обработчики событий
+        logoutButton.addEventListener('click', logout);
+
+        // Обработка поиска
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.trim();
+                if (query) {
+                    window.location.href = `search.html?query=${encodeURIComponent(query)}`;
+                }
+            }
+        });
+
+        // Запуск инициализации
+        await init();
     });
 </script>
 </body>

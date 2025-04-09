@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 6000;
 // Middleware
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:6000',
+    origin: process.env.CLIENT_URL || 'http://localhost:9000',
     credentials: true
 }));
 app.use(cookieParser());
@@ -40,10 +40,10 @@ app.use(errorHandler);
 
 //const { fetchAndSaveArtists } = require('./API/loading_artist');
 //const { fetchAndSaveGenres } = require('./API/loading_genre');
-const { fetchAndSaveTracks } = require('./API/loading_track');
+//const { fetchAndSaveTracks } = require('./API/loading_track');
 //const { fetchAndSaveAlbums } = require('./API/loading_album');
 
-const artistNames = ['boulevard depo'];
+//const artistNames = ['boulevard depo'];
 //const tracksLimit = 10;
 
 // Запуск приложения
@@ -52,18 +52,18 @@ const start = async () => {
         await sequelize.authenticate();
         await sequelize.sync({ alter: true }); // Используйте force: true только для разработки!
 
-        app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
+        app.listen(PORT, () => console.log(Сервер запущен на порту ${PORT}));
 
         // Загружаем данные артистов после старта сервера
-        //await fetchAndSaveArtists(artistNames);
+        await fetchAndSaveArtists(artistNames);
 
         // Загружаем жанры после старта сервера
-        //await fetchAndSaveGenres();
-        await fetchAndSaveTracks(artistNames);
+        await fetchAndSaveGenres();
+
         // Загружаем альбомы для каждого артиста
-        //for (const artistName of artistNames) {
-            //await fetchAndSaveAlbums(artistName);
-       // }
+        for (const artistName of artistNames) {
+            await fetchAndSaveAlbums(artistName);
+        }
 
     } catch (e) {
         console.error('Ошибка запуска сервера:', e);
