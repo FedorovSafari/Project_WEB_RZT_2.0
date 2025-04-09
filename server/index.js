@@ -38,32 +38,21 @@ app.use((req, res, next) => {
 // Обработка ошибок (последний middleware)
 app.use(errorHandler);
 
-//const { fetchAndSaveArtists } = require('./API/loading_artist');
-//const { fetchAndSaveGenres } = require('./API/loading_genre');
-//const { fetchAndSaveTracks } = require('./API/loading_track');
-//const { fetchAndSaveAlbums } = require('./API/loading_album');
+const seedDatabase = require('./API/dbSeeder');
 
-//const artistNames = ['boulevard depo'];
-//const tracksLimit = 10;
+//const { fetchAndSaveGenres } = require('./API/loading_genre');
+
 
 // Запуск приложения
 const start = async () => {
     try {
         await sequelize.authenticate();
-        await sequelize.sync({ alter: true }); // Используйте force: true только для разработки!
+        await sequelize.sync({ alter: true });
+       // await fetchAndSaveGenres();
+        //console.log('База данных подключена.');
+        //await seedDatabase("Lizer");
 
-        app.listen(PORT, () => console.log(Сервер запущен на порту ${PORT}));
-
-        // Загружаем данные артистов после старта сервера
-        await fetchAndSaveArtists(artistNames);
-
-        // Загружаем жанры после старта сервера
-        await fetchAndSaveGenres();
-
-        // Загружаем альбомы для каждого артиста
-        for (const artistName of artistNames) {
-            await fetchAndSaveAlbums(artistName);
-        }
+        app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
 
     } catch (e) {
         console.error('Ошибка запуска сервера:', e);
