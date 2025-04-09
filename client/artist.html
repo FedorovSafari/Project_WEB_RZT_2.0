@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Артист</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
         body {
             font-family: 'Inter', Arial, sans-serif;
@@ -333,7 +332,7 @@
 <header>
     <div class="search-bar">
         <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="Поиск...">
+        <label for="searchInput"></label><input type="text" id="searchInput" placeholder="Поиск...">
     </div>
     <div class="auth-buttons" id="authButtons">
         <a href="login.html"><button>Войти</button></a>
@@ -416,7 +415,7 @@
             const user = await checkAuth();
 
             if (user) {
-                userName.textContent = user.email;
+                userName.textContent = user.nickname;
                 authButtons.style.display = 'none';
                 userInfo.style.display = 'flex';
             } else {

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Артисты</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         /* Стили остаются такими же, как на главной странице */
         body {
@@ -165,7 +164,7 @@
 <header>
     <div class="search-bar">
         <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="Поиск...">
+        <label for="searchInput"></label><input type="text" id="searchInput" placeholder="Поиск...">
     </div>
     <div class="auth-buttons" id="authButtons">
         <a href="login.html"><button>Войти</button></a>
@@ -186,7 +185,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
-        const token = localStorage.getItem('token');
         const authButtons = document.getElementById('authButtons');
         const userInfo = document.getElementById('userInfo');
         const userName = document.getElementById('userName');
@@ -266,8 +264,9 @@
                         <img src="${artist.img}" alt="Фото артиста">
                         <h3>${artist.name}</h3>
                     `;
-                div.addEventListener('click', () => {
-                    if (token) {
+                div.addEventListener('click', async () => {
+                    const user = await checkAuth()
+                    if (user) {
                         window.location.href = `artist.html?id=${artist.id}`; // Переход на страницу артиста
                     } else {
                         window.location.href = 'login.html'; // Переход на страницу входа
@@ -281,7 +280,7 @@
             const user = await checkAuth();
 
             if (user) {
-                userName.textContent = user.email;
+                userName.textContent = user.nickname;
                 authButtons.style.display = 'none';
                 userInfo.style.display = 'flex';
             } else {

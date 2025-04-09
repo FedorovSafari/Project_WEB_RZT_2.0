@@ -35,12 +35,12 @@ app.use((req, res, next) => {
     next();
 });
 
-// Обработка ошибок (последний middleware)
+//Обработка ошибок (последний middleware)
 app.use(errorHandler);
 
 const seedDatabase = require('./API/dbSeeder');
 
-//const { fetchAndSaveGenres } = require('./API/loading_genre');
+const { fetchAndSaveGenres } = require('./API/loading_genre');
 
 
 // Запуск приложения
@@ -48,9 +48,9 @@ const start = async () => {
     try {
         await sequelize.authenticate();
         await sequelize.sync({ alter: true });
-       // await fetchAndSaveGenres();
-        //console.log('База данных подключена.');
-        //await seedDatabase("Lizer");
+        await fetchAndSaveGenres();
+        console.log('База данных подключена.');
+        await seedDatabase("SODA LUV");
 
         app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
 

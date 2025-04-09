@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Результаты поиска</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         /* Стили такие же, как на главной странице */
         body {
@@ -54,7 +53,7 @@
             color: #888;
         }
         .auth-buttons {
-            display: flex;
+            display: none; /* Изменено на none по умолчанию */
             gap: 10px;
         }
         .auth-buttons button {
@@ -72,7 +71,7 @@
             background-color: #ddd;
         }
         .user-info {
-            display: flex;
+            display: none; /* Изменено на none по умолчанию */
             align-items: center;
             gap: 10px;
         }
@@ -171,13 +170,13 @@
 <header>
     <div class="search-bar">
         <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="Поиск...">
+        <label for="searchInput"></label><input type="text" id="searchInput" placeholder="Поиск...">
     </div>
     <div class="auth-buttons" id="authButtons">
         <a href="login.html"><button>Войти</button></a>
         <a href="register.html"><button>Регистрация</button></a>
     </div>
-    <div class="user-info" id="userInfo" style="display: none;">
+    <div class="user-info" id="userInfo">
         <span id="userName"></span>
         <button id="logoutButton">Выйти</button>
     </div>
@@ -201,7 +200,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
-        const token = localStorage.getItem('token');
         const authButtons = document.getElementById('authButtons');
         const userInfo = document.getElementById('userInfo');
         const userName = document.getElementById('userName');
@@ -251,21 +249,38 @@
             }
         }
 
+        // Обновление UI в зависимости от статуса авторизации
+        async function updateAuthUI() {
+            const user = await checkAuth();
+
+            if (user) {
+                userName.textContent = user.nickname;
+                authButtons.style.display = 'none';
+                userInfo.style.display = 'flex';
+            } else {
+                authButtons.style.display = 'flex';
+                userInfo.style.display = 'none';
+            }
+        }
+
         // Получение параметра запроса из URL
         const urlParams = new URLSearchParams(window.location.search);
         const query = urlParams.get('query');
 
-        if (query) {
-            searchInput.value = query;
-            try {
-                const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
-                if (!response.ok) {
-                    throw new Error('Ошибка при поиске');
+        // Функция выполнения поиска
+        async function performSearch(query) {
+            if (query) {
+                searchInput.value = query;
+                try {
+                    const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
+                    if (!response.ok) {
+                        throw new Error('Ошибка при поиске');
+                    }
+                    const results = await response.json();
+                    displayResults(results);
+                } catch (error) {
+                    console.error('Ошибка:', error);
                 }
-                const results = await response.json();
-                displayResults(results);
-            } catch (error) {
-                console.error('Ошибка:', error);
             }
         }
 
@@ -286,8 +301,9 @@
                     <h3>${track.title}</h3>
                     <p>${new Date(track.date).toLocaleDateString()}</p>
                 `;
-                div.addEventListener('click', () => {
-                    if (token) {
+                div.addEventListener('click', async () => {
+                    const user = await checkAuth();
+                    if (user) {
                         window.location.href = `track.html?id=${track.id}`;
                     } else {
                         window.location.href = 'login.html';
@@ -307,8 +323,9 @@
                     <h3>${album.title}</h3>
                     <p>${new Date(album.date).toLocaleDateString()}</p>
                 `;
-                div.addEventListener('click', () => {
-                    if (token) {
+                div.addEventListener('click', async () => {
+                    const user = await checkAuth();
+                    if (user) {
                         window.location.href = `album.html?id=${album.id}`;
                     } else {
                         window.location.href = 'login.html';
@@ -327,8 +344,9 @@
                     <img src="${artist.img}" alt="Фото артиста">
                     <h3>${artist.name}</h3>
                 `;
-                div.addEventListener('click', () => {
-                    if (token) {
+                div.addEventListener('click', async () => {
+                    const user = await checkAuth();
+                    if (user) {
                         window.location.href = `artist.html?id=${artist.id}`;
                     } else {
                         window.location.href = 'login.html';
@@ -337,10 +355,9 @@
                 container.appendChild(div);
             });
         }
-    });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const searchInput = document.getElementById('searchInput');
+        // Обработчики событий
+        logoutButton.addEventListener('click', logout);
 
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -350,6 +367,15 @@
                 }
             }
         });
+
+        // Инициализация страницы
+        async function init() {
+            await updateAuthUI();
+            await performSearch(query);
+        }
+
+        // Запуск инициализации
+        await init();
     });
 </script>
 </body>

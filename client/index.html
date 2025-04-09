@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Музыкальный портал</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         /* Основные стили */
         body {
@@ -196,7 +195,7 @@
 <header>
     <div class="search-bar">
         <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="Поиск...">
+        <label for="searchInput"></label><input type="text" id="searchInput" placeholder="Поиск...">
     </div>
     <div class="auth-buttons" id="authButtons">
         <a href="login.html"><button>Войти</button></a>
@@ -293,43 +292,50 @@
                 }
             }
 
-            // Функция загрузки треков
-            async function loadTracks() {
+            // Функция загрузки релизов (треков и альбомов)
+            async function loadReleases() {
                 try {
                     const response = await fetch('/api/releases/recent', {
                         credentials: 'include'
                     });
 
                     if (!response.ok) {
-                        throw new Error('Ошибка при загрузке треков');
+                        throw new Error('Ошибка при загрузке релизов');
                     }
 
-                    const tracks = await response.json();
-                    displayTracks(tracks);
+                    const releases = await response.json();
+                    displayReleases(releases);
                 } catch (error) {
                     console.error('Ошибка:', error);
                 }
             }
 
-            // Функция отображения треков
-            function displayTracks(tracks) {
+// Функция отображения релизов
+            function displayReleases(releases) {
                 releasesContainer.innerHTML = '';
-                tracks.forEach(track => {
+
+                releases.forEach(release => {
                     const div = document.createElement('div');
                     div.className = 'release';
                     div.innerHTML = `
-                        <img src="${track.img}" alt="Обложка трека">
-                        <h3>${track.title}</h3>
-                        <p>${new Date(track.date).toLocaleDateString()}</p>
-                    `;
+            <img src="${release.img}" alt="Обложка ${release.type === 'track' ? 'трека' : 'альбома'}">
+            <h3>${release.title}</h3>
+            <p>${new Date(release.date).toLocaleDateString()}</p>
+            <p class="release-type">${release.type === 'track' ? 'Трек' : 'Альбом'}</p>
+        `;
+
                     div.addEventListener('click', async () => {
                         const user = await checkAuth();
                         if (user) {
-                            window.location.href = `track.html?id=${track.id}`;
+                            // Определяем URL на основе типа релиза
+                            window.location.href = release.type === 'track'
+                                ? `track.html?id=${release.id}`
+                                : `album.html?id=${release.id}`;
                         } else {
                             window.location.href = 'login.html';
                         }
                     });
+
                     releasesContainer.appendChild(div);
                 });
             }
@@ -339,7 +345,7 @@
                 const user = await checkAuth();
 
                 if (user) {
-                    userName.textContent = user.email;
+                    userName.textContent = user.nickname;
                     authButtons.style.display = 'none';
                     userInfo.style.display = 'flex';
                 } else {
@@ -351,7 +357,7 @@
             // Инициализация страницы
             async function init() {
                 await updateAuthUI();
-                await loadTracks();
+                await loadReleases();
             }
 
             // Обработчики событий
