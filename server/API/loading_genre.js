@@ -10,7 +10,7 @@ async function fetchAndSaveGenres() {
         const response = await axios.get('http://ws.audioscrobbler.com/2.0/', {
             params: {
                 method: 'chart.gettoptags', // Метод для получения популярных тегов (жанров)
-                api_key: process.env.API_KEY, // Ваш API-ключ
+                api_key: process.env.LASTFM_API_KEY, // Ваш API-ключ
                 format: 'json',
             },
         });
