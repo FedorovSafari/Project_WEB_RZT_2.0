@@ -12,8 +12,8 @@ const User = sequelize.define('User', {
 const Track = sequelize.define('Track', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     title: {type: DataTypes.STRING, allowNull: false},
-    duration: {type: DataTypes.FLOAT, allowNull: false}, // продолжительность трека
-    date: {type: DataTypes.DATE, allowNull: false}, // дата выхода трека
+    duration: {type: DataTypes.FLOAT, allowNull: false},
+    date: {type: DataTypes.DATE, allowNull: false},
     audioFile: {type: DataTypes.STRING, allowNull: false},
     img: {type: DataTypes.STRING, allowNull: false},
 })
@@ -27,13 +27,27 @@ const Album = sequelize.define('Album', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     title: {type: DataTypes.STRING, allowNull: false},
     duration: {type: DataTypes.INTEGER, allowNull: false},
-    date: {type: DataTypes.DATE, allowNull: false}, // дата выхода альбома
+    date: {type: DataTypes.DATE, allowNull: false},
     img: {type: DataTypes.STRING, allowNull: false},
 })
 
 const Artist = sequelize.define('Artist', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     name: {type: DataTypes.STRING, allowNull: false},
+    bio: {type: DataTypes.TEXT, allowNull: false},
+    img: {type: DataTypes.STRING, allowNull: false},
+})
+
+const Review = sequelize.define('Review', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    head: {type: DataTypes.STRING, allowNull: false},
+    description: {type: DataTypes.TEXT, allowNull: false},
+    estimation: {type: DataTypes.INTEGER, allowNull: false},
+    like: {type: DataTypes.INTEGER, allowNull: false},
+})
+
+const Profile = sequelize.define('Profile', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     bio: {type: DataTypes.TEXT, allowNull: false},
     img: {type: DataTypes.STRING, allowNull: false},
 })
@@ -56,11 +70,29 @@ Track.belongsTo(Album);
 Artist.belongsToMany(Genre, { through: 'ArtistGenre' });
 Genre.belongsToMany(Artist, { through: 'ArtistGenre' });
 
+User.hasMany(Review);
+Review.belongsTo(User);
+
+Artist.hasMany(Review);
+Review.belongsTo(Artist);
+
+Album.hasMany(Review);
+Review.belongsTo(Album);
+
+User.hasOne(Profile, {
+    foreignKey: 'userId',
+    onDelete: 'CASCADE'
+});
+Profile.belongsTo(User, {
+    foreignKey: 'userId'
+});
 
 module.exports = {
     User,
     Track,
     Genre,
     Album,
-    Artist
+    Artist,
+    Review,
+    Profile
 }

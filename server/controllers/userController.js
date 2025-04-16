@@ -88,8 +88,6 @@ class UserController {
             // Генерация токена
             const token = generateJWT(user.id, user.nickname, user.email, user.role);
 
-            console.log("перед куками")
-
             // Установка HTTP-only куки
             res.cookie('authToken', token, {
                 httpOnly: true,
@@ -97,7 +95,6 @@ class UserController {
                 maxAge: 24 * 60 * 60 * 1000, // 24 часа
                 sameSite: 'strict'
             });
-            console.log("после кук ",token)
 
             return res.json({
                 user: {
