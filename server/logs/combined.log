@@ -1,0 +1,48 @@
+2025-05-19 20:06:30 [[33mwarn[39m]: Unauthorized access attempt - no token provided
+2025-05-19 20:06:30 [[31merror[39m]: API Error: 401 - Authorization required
+{
+  "url": "/api/user/auth",
+  "method": "GET",
+  "ip": "::1",
+  "user": "anonymous"
+}
+2025-05-19 20:06:33 [[33mwarn[39m]: Unauthorized access attempt - no token provided
+2025-05-19 20:06:33 [[31merror[39m]: API Error: 401 - Authorization required
+{
+  "url": "/api/user/auth",
+  "method": "GET",
+  "ip": "::1",
+  "user": "anonymous"
+}
+2025-05-19 20:06:37 [[33mwarn[39m]: Unauthorized access attempt - no token provided
+2025-05-19 20:06:37 [[31merror[39m]: API Error: 401 - Authorization required
+{
+  "url": "/api/user/auth",
+  "method": "GET",
+  "ip": "::1",
+  "user": "anonymous"
+}
+2025-05-19 20:06:39 [[33mwarn[39m]: Unauthorized access attempt - no token provided
+2025-05-19 20:06:39 [[31merror[39m]: API Error: 401 - Authorization required
+{
+  "url": "/api/user/auth",
+  "method": "GET",
+  "ip": "::1",
+  "user": "anonymous"
+}
+2025-05-19 20:06:42 [[33mwarn[39m]: Unauthorized access attempt - no token provided
+2025-05-19 20:06:42 [[31merror[39m]: API Error: 401 - Authorization required
+{
+  "url": "/api/user/auth",
+  "method": "GET",
+  "ip": "::1",
+  "user": "anonymous"
+}
+2025-05-19 20:06:42 [[33mwarn[39m]: Unauthorized access attempt - no token provided
+2025-05-19 20:06:42 [[31merror[39m]: API Error: 401 - Authorization required
+{
+  "url": "/api/user/auth",
+  "method": "GET",
+  "ip": "::1",
+  "user": "anonymous"
+}

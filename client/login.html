@@ -178,6 +178,10 @@
             <span id="errorText"></span>
         </div>
 
+        <div class="recaptcha-container" style="margin: 15px 0;">
+            <div class="g-recaptcha" data-sitekey="6LcfgkErAAAAAF7CcrvyJLED96p3U2BcI7O03icE"></div>
+        </div>
+
         <button type="submit" id="loginButton">
             <span class="button-text">Войти</span>
             <span class="button-spinner"><i class="fas fa-spinner fa-spin"></i></span>
@@ -214,6 +218,14 @@
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            // Получаем токен reCAPTCHA
+            const recaptchaToken = grecaptcha.getResponse();
+            if (!recaptchaToken) {
+                errorText.textContent = 'Пожалуйста, подтвердите, что вы не робот';
+                errorMessage.style.display = 'flex';
+                return;
+            }
+
             // Показываем индикатор загрузки
             loginButton.classList.add('loading');
             loginButton.disabled = true;
@@ -229,7 +241,7 @@
                         'Content-Type': 'application/json',
                     },
                     credentials: 'include',
-                    body: JSON.stringify({ email, password }),
+                    body: JSON.stringify({ email, password, recaptchaToken }),
                 });
 
                 const data = await response.json();
@@ -245,6 +257,7 @@
                 console.error('Ошибка входа:', error);
                 errorText.textContent = error.message || 'Произошла ошибка при входе';
                 errorMessage.style.display = 'flex';
+                grecaptcha.reset();
             } finally {
                 // Восстанавливаем кнопку
                 loginButton.classList.remove('loading');
@@ -260,5 +273,6 @@
         });
     });
 </script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
 </html>

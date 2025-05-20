@@ -1,0 +1,17 @@
+/* Для обеих страниц (login.html и register.html) */
+.recaptcha-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.g-recaptcha {
+    transform: scale(0.9);
+    transform-origin: center;
+}
+
+@media (max-width: 400px) {
+    .g-recaptcha {
+        transform: scale(0.8);
+    }
+}

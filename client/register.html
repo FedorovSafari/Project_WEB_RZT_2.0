@@ -193,6 +193,10 @@
             <span id="errorText"></span>
         </div>
 
+        <div class="recaptcha-container" style="margin: 15px 0;">
+            <div class="g-recaptcha" data-sitekey="6LcfgkErAAAAAF7CcrvyJLED96p3U2BcI7O03icE"></div>
+        </div>
+
         <button type="submit" id="registerButton">
             <span class="button-text">Зарегистрироваться</span>
             <span class="button-spinner"><i class="fas fa-spinner fa-spin"></i></span>
@@ -228,6 +232,14 @@
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            // Получаем токен reCAPTCHA
+            const recaptchaToken = grecaptcha.getResponse();
+            if (!recaptchaToken) {
+                errorText.textContent = 'Пожалуйста, подтвердите, что вы не робот';
+                errorMessage.style.display = 'flex';
+                return;
+            }
+
             // Показываем индикатор загрузки
             registerButton.classList.add('loading');
             registerButton.disabled = true;
@@ -254,7 +266,7 @@
                         'Content-Type': 'application/json',
                     },
                     credentials: 'include',
-                    body: JSON.stringify({ nickname, email, password }),
+                    body: JSON.stringify({ nickname, email, password, recaptchaToken }),
                 });
 
                 const data = await response.json();
@@ -270,6 +282,7 @@
                 console.error('Ошибка регистрации:', error);
                 errorText.textContent = error.message || 'Произошла ошибка при регистрации';
                 errorMessage.style.display = 'flex';
+                grecaptcha.reset();
             } finally {
                 // Восстанавливаем кнопку
                 registerButton.classList.remove('loading');
@@ -285,5 +298,6 @@
         });
     });
 </script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
 </html>

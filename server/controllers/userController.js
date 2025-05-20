@@ -2,6 +2,7 @@ const ApiError = require('../error/ApiError');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { User } = require('../models/models');
+const axios = require('axios');
 
 const generateJWT = (id, nickname, email, role) => {
     return jwt.sign(
@@ -12,58 +13,75 @@ const generateJWT = (id, nickname, email, role) => {
 };
 
 class UserController {
+    async verifyRecaptcha(token) {
+        console.log('Начало проверки reCAPTCHA...'); // Логирование
+        if (process.env.NODE_ENV === 'development') {
+            console.warn('reCAPTCHA отключена в development');
+            return true;
+        }
+
+        if (!token) {
+            console.error('Токен reCAPTCHA отсутствует');
+            return false;
+        }
+
+        try {
+            const response = await axios.post(
+                `https://www.google.com/recaptcha/api/siteverify`,
+                new URLSearchParams({
+                    secret: process.env.RECAPTCHA_SECRET_KEY,
+                    response: token
+                }),
+                { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+            );
+
+            console.log('Ответ от Google reCAPTCHA:', response.data);
+            return response.data.success;
+        } catch (error) {
+            console.error('Ошибка проверки reCAPTCHA:', error.message);
+            return false;
+        }
+    }
+
     async registration(req, res, next) {
         try {
-            const { nickname, email, password, role = 'USER' } = req.body;
+            const { nickname, email, password, role = 'USER', recaptchaToken } = req.body;
 
-            // Валидация
             if (!nickname || !email || !password) {
                 return next(ApiError.badRequest('Необходимо указать имя пользователя, email и пароль'));
             }
 
-            // Проверка существования пользователя по nickname
-            const nicknameCandidate = await User.findOne({ where: { nickname } });
+            const isRecaptchaValid = await this.verifyRecaptcha(recaptchaToken);
+            if (!isRecaptchaValid) {
+                return next(ApiError.badRequest('Проверка reCAPTCHA не пройдена'));
+            }
+
+            const [nicknameCandidate, emailCandidate] = await Promise.all([
+                User.findOne({ where: { nickname } }),
+                User.findOne({ where: { email } })
+            ]);
+
             if (nicknameCandidate) {
                 return next(ApiError.badRequest('Пользователь с таким именем уже существует'));
             }
-
-            // Проверка существования пользователя по email
-            const emailCandidate = await User.findOne({ where: { email } });
             if (emailCandidate) {
                 return next(ApiError.badRequest('Пользователь с таким email уже существует'));
             }
 
-            // Хеширование пароля
             const hashedPassword = await bcrypt.hash(password, 10);
-
-            // Создание пользователя
-            const user = await User.create({
-                nickname,
-                email,
-                role,
-                password: hashedPassword
-            });
-
-            // Генерация токена
+            const user = await User.create({ nickname, email, role, password: hashedPassword });
             const token = generateJWT(user.id, user.nickname, user.email, user.role);
 
-            // Установка HTTP-only куки
             res.cookie('authToken', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                maxAge: 24 * 60 * 60 * 1000, // 24 часа
+                maxAge: 24 * 60 * 60 * 1000,
                 sameSite: 'strict'
             });
 
             return res.json({
-                user: {
-                    id: user.id,
-                    nickname: user.nickname,
-                    email: user.email,
-                    role: user.role
-                }
+                user: { id: user.id, nickname: user.nickname, email: user.email, role: user.role }
             });
-
         } catch (error) {
             return next(ApiError.internal(error.message));
         }
@@ -71,7 +89,12 @@ class UserController {
 
     async login(req, res, next) {
         try {
-            const { email, password } = req.body;
+            const { email, password, recaptchaToken } = req.body;
+            // Проверка reCAPTCHA
+           const isRecaptchaValid = await this.verifyRecaptcha(recaptchaToken);
+           if (!isRecaptchaValid) {
+                return next(ApiError.badRequest('Проверка reCAPTCHA не пройдена'));
+           }
 
             // Поиск пользователя
             const user = await User.findOne({ where: { email } });
