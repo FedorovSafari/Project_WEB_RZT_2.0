@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация | Музыкальный портал</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', Arial, sans-serif;
@@ -110,8 +111,13 @@
             gap: 6px;
         }
 
-        .error-message i {
-            font-size: 16px;
+        .success-message {
+            color: #4CAF50;
+            font-size: 14px;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .password-toggle {
@@ -157,6 +163,26 @@
             font-size: 12px;
             margin-top: 5px;
         }
+
+        #resendContainer {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        #resendLink {
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        #resendLink:hover {
+            text-decoration: underline;
+        }
+
+        #resendTimer {
+            color: #aaa;
+        }
     </style>
 </head>
 <body>
@@ -181,6 +207,9 @@
             <label for="password"></label>
             <input type="password" id="password" name="password" placeholder="Пароль" required>
             <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+            <div class="password-requirements">
+                Пароль должен содержать минимум 8 символов
+            </div>
         </div>
 
         <div class="input-group">
@@ -191,6 +220,11 @@
         <div id="errorMessage" class="error-message" style="display: none;">
             <i class="fas fa-exclamation-circle"></i>
             <span id="errorText"></span>
+        </div>
+
+        <div id="successMessage" class="success-message" style="display: none;">
+            <i class="fas fa-check-circle"></i>
+            <span id="successText"></span>
         </div>
 
         <div class="recaptcha-container" style="margin: 15px 0;">
@@ -219,7 +253,10 @@
         const passwordInput = document.getElementById('password');
         const errorMessage = document.getElementById('errorMessage');
         const errorText = document.getElementById('errorText');
+        const successMessage = document.getElementById('successMessage');
+        const successText = document.getElementById('successText');
         const registerButton = document.getElementById('registerButton');
+        const emailInput = document.getElementById('email');
 
         // Переключение видимости паролей
         togglePassword.addEventListener('click', () => {
@@ -244,6 +281,7 @@
             registerButton.classList.add('loading');
             registerButton.disabled = true;
             errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
 
             const nickname = document.getElementById('username').value.trim();
             const email = document.getElementById('email').value.trim();
@@ -253,6 +291,15 @@
             // Проверка совпадения паролей
             if (password !== confirmPassword) {
                 errorText.textContent = 'Пароли не совпадают';
+                errorMessage.style.display = 'flex';
+                registerButton.classList.remove('loading');
+                registerButton.disabled = false;
+                return;
+            }
+
+            // Проверка сложности пароля
+            if (password.length < 8) {
+                errorText.textContent = 'Пароль должен содержать минимум 8 символов';
                 errorMessage.style.display = 'flex';
                 registerButton.classList.remove('loading');
                 registerButton.disabled = false;
@@ -275,8 +322,9 @@
                     throw new Error(data.message || 'Ошибка при регистрации');
                 }
 
-                // Успешная регистрация - перенаправляем на главную
-                window.location.href = '/index.html';
+                // Успешная регистрация - сохраняем email и перенаправляем на подтверждение
+                localStorage.setItem('unverifiedEmail', email);
+                window.location.href = 'verify-email.html';
 
             } catch (error) {
                 console.error('Ошибка регистрации:', error);

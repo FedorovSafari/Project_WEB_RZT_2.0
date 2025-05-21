@@ -7,6 +7,9 @@ const User = sequelize.define('User', {
     email: {type: DataTypes.STRING, unique: true},
     password: {type: DataTypes.STRING},
     role: {type: DataTypes.STRING, defaultValue: 'USER'},
+    isEmailVerified: {type: DataTypes.BOOLEAN, defaultValue: false},
+    emailVerificationToken: {type: DataTypes.STRING},
+    emailVerificationTokenExpires: {type: DataTypes.DATE}
 })
 
 const Track = sequelize.define('Track', {

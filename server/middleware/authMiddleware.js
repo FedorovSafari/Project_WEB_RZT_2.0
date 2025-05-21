@@ -13,6 +13,12 @@ module.exports = function(req, res, next) {
         // Верифицируем токен
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
+        // После верификации токена добавим проверку:
+        if (!decoded.isEmailVerified) {
+            res.clearCookie('authToken');
+            return next(ApiError.forbidden('Email не подтвержден. Пожалуйста, проверьте ваш почтовый ящик.'));
+        }
+
         // Проверяем, не истек ли токен
         if (decoded.exp * 1000 < Date.now()) {
             res.clearCookie('authToken');
