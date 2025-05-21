@@ -38,8 +38,8 @@ app.use((req, res, next) => {
 //Обработка ошибок (последний middleware)
 app.use(errorHandler);
 
-//const { saveArtistData } = require('./API_2/dataHandler');
-//(async () => {
+// const { saveArtistData } = require('./API_2/dataHandler');
+// (async () => {
 //    try {
 //        const artistName = 'ALBLAK 52';
 //        console.log(`Начинается сохранение данных для артиста: ${artistName}`);
@@ -48,7 +48,7 @@ app.use(errorHandler);
 //    } catch (error) {
 //        console.error('Ошибка при сохранении данных артиста:', error);
 //    }
-//})();
+// })();
 
 
 // Запуск приложения
