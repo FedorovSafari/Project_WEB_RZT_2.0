@@ -43,8 +43,15 @@
             font-size: 14px;
         }
 
-        .auth-form .input-group {
-            margin-bottom: 20px;
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
+            position: relative;
+            width: 100%;
         }
 
         .auth-form input {
@@ -56,6 +63,7 @@
             color: white;
             font-size: 15px;
             transition: all 0.3s ease;
+            box-sizing: border-box;
         }
 
         .auth-form input:focus {
@@ -75,7 +83,6 @@
             font-size: 16px;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            margin-top: 10px;
         }
 
         .auth-form button:hover {
@@ -157,7 +164,6 @@
 
     <form id="verificationForm" class="auth-form">
         <div class="input-group">
-            <label for="verificationCode"></label>
             <input type="text" id="verificationCode" name="verificationCode" placeholder="Код подтверждения" required>
         </div>
 

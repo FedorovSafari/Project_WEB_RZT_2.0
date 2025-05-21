@@ -45,9 +45,15 @@
             font-size: 14px;
         }
 
-        .auth-form .input-group {
-            margin-bottom: 20px;
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
             position: relative;
+            width: 100%;
         }
 
         .auth-form input {
@@ -59,6 +65,7 @@
             color: white;
             font-size: 15px;
             transition: all 0.3s ease;
+            box-sizing: border-box;
         }
 
         .auth-form input:focus {
@@ -78,7 +85,6 @@
             font-size: 16px;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            margin-top: 10px;
         }
 
         .auth-form button:hover {
@@ -117,8 +123,9 @@
 
         .password-toggle {
             position: absolute;
-            right: 15px;
-            top: 15px;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
             color: #aaa;
             cursor: pointer;
         }
@@ -161,6 +168,10 @@
             display: block;
             text-align: center;
         }
+
+        .recaptcha-container {
+            margin: 15px 0;
+        }
     </style>
 </head>
 <body>
@@ -172,12 +183,10 @@
 
     <form id="loginForm" class="auth-form">
         <div class="input-group">
-            <label for="email"></label>
             <input type="email" id="email" name="email" placeholder="Email" required>
         </div>
 
         <div class="input-group">
-            <label for="password"></label>
             <input type="password" id="password" name="password" placeholder="Пароль" required>
             <i class="fas fa-eye password-toggle" id="togglePassword"></i>
         </div>
@@ -191,7 +200,7 @@
             <a id="resendVerification" class="verification-link">Отправить письмо с подтверждением повторно</a>
         </div>
 
-        <div class="recaptcha-container" style="margin: 15px 0;">
+        <div class="recaptcha-container">
             <div class="g-recaptcha" data-sitekey="6LcfgkErAAAAAF7CcrvyJLED96p3U2BcI7O03icE"></div>
         </div>
 

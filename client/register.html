@@ -45,9 +45,15 @@
             font-size: 14px;
         }
 
-        .auth-form .input-group {
-            margin-bottom: 20px;
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
             position: relative;
+            width: 100%;
         }
 
         .auth-form input {
@@ -59,6 +65,7 @@
             color: white;
             font-size: 15px;
             transition: all 0.3s ease;
+            box-sizing: border-box;
         }
 
         .auth-form input:focus {
@@ -122,8 +129,9 @@
 
         .password-toggle {
             position: absolute;
-            right: 15px;
-            top: 15px;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
             color: #aaa;
             cursor: pointer;
         }
@@ -183,6 +191,10 @@
         #resendTimer {
             color: #aaa;
         }
+
+        .recaptcha-container {
+            margin: 15px 0;
+        }
     </style>
 </head>
 <body>
@@ -194,17 +206,14 @@
 
     <form id="registerForm" class="auth-form">
         <div class="input-group">
-            <label for="username"></label>
             <input type="text" id="username" name="username" placeholder="Имя пользователя" required>
         </div>
 
         <div class="input-group">
-            <label for="email"></label>
             <input type="email" id="email" name="email" placeholder="Email" required>
         </div>
 
         <div class="input-group">
-            <label for="password"></label>
             <input type="password" id="password" name="password" placeholder="Пароль" required>
             <i class="fas fa-eye password-toggle" id="togglePassword"></i>
             <div class="password-requirements">
@@ -213,7 +222,6 @@
         </div>
 
         <div class="input-group">
-            <label for="confirmPassword"></label>
             <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Повторите пароль" required>
         </div>
 
@@ -227,7 +235,7 @@
             <span id="successText"></span>
         </div>
 
-        <div class="recaptcha-container" style="margin: 15px 0;">
+        <div class="recaptcha-container">
             <div class="g-recaptcha" data-sitekey="6LcfgkErAAAAAF7CcrvyJLED96p3U2BcI7O03icE"></div>
         </div>
 
