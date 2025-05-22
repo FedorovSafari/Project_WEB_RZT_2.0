@@ -181,6 +181,47 @@
             color: #aaa;
             padding: 0 10px;
         }
+        .review {
+            border: 1px solid #444;
+            background-color: #333;
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+        }
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .review-user {
+            font-weight: bold;
+            color: #fff;
+        }
+        .review-title {
+            font-style: italic;
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .review-content {
+            margin-bottom: 10px;
+            color: #ddd;
+        }
+        .review-footer {
+            display: flex;
+            justify-content: space-between;
+            color: #aaa;
+            font-size: 14px;
+        }
+        .review-likes {
+            color: #ff4444;
+        }
+        .review-target {
+            background-color: #555;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -211,30 +252,12 @@
     <div class="reviews-container">
         <div class="reviews-column">
             <h2>Популярные рецензии</h2>
-            <div class="review">
-                <strong>Имя пользователя</strong><br>
-                <em>Заголовок</em><br>
-                Текст рецензии
-            </div>
-            <div class="review">
-                <strong>Имя пользователя</strong><br>
-                <em>Заголовок</em><br>
-                Текст рецензии
-            </div>
+            <div id="popular-reviews"></div>
         </div>
 
         <div class="reviews-column">
             <h2>Все рецензии</h2>
-            <div class="review">
-                <strong>Имя пользователя</strong><br>
-                <em>Заголовок</em><br>
-                Текст рецензии
-            </div>
-            <div class="review">
-                <strong>Имя пользователя</strong><br>
-                <em>Заголовок</em><br>
-                Текст рецензии
-            </div>
+            <div id="recent-reviews"></div>
         </div>
     </div>
 
@@ -354,10 +377,64 @@
                 }
             }
 
+            async function loadReviews() {
+                try {
+                    // Загружаем популярные рецензии
+                    const popularResponse = await fetch('/api/reviews/popular');
+                    const popularReviews = await popularResponse.json();
+                    displayReviews(popularReviews, 'popular-reviews');
+
+                    // Загружаем последние рецензии
+                    const recentResponse = await fetch('/api/reviews/recent');
+                    const recentReviews = await recentResponse.json();
+                    displayReviews(recentReviews, 'recent-reviews');
+                } catch (error) {
+                    console.error('Ошибка при загрузке рецензий:', error);
+                }
+            }
+
+            // Функция отображения рецензий
+            function displayReviews(reviews, containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                container.innerHTML = '';
+
+                reviews.forEach(review => {
+                    const reviewElement = document.createElement('div');
+                    reviewElement.className = 'review';
+
+                    // Определяем цель рецензии (трек или альбом)
+                    let target = '';
+                    if (review.Track) {
+                        target = `Трек: ${review.Track.title}`;
+                    } else if (review.Album) {
+                        target = `Альбом: ${review.Album.title}`;
+                    }
+
+                    reviewElement.innerHTML = `
+                    <div class="review-header">
+                        <span class="review-user">${review.User.nickname}</span>
+                        <span class="review-target">${target}</span>
+                    </div>
+                    <div class="review-title">${review.head}</div>
+                    <div class="review-content">${review.description}</div>
+                    <div class="review-footer">
+                        <span>Оценка: ${review.estimation}/10</span>
+                        <span class="review-likes">❤️ ${review.like}</span>
+                    </div>
+                `;
+
+                    container.appendChild(reviewElement);
+                });
+            }
+
+
             // Инициализация страницы
             async function init() {
                 await updateAuthUI();
                 await loadReleases();
+                await loadReviews();
             }
 
             // Обработчики событий

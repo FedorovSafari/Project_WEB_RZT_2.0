@@ -653,7 +653,7 @@
                     day: 'numeric'
                 });
 
-                const isCurrentUserReview = review.userId === currentUser?.id;
+                const isCurrentUserReview = review.UserId === currentUser.id;
 
                 return `
                     <div class="review" data-review-id="${review.id}">
