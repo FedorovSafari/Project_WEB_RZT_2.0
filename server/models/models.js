@@ -82,6 +82,9 @@ Review.belongsTo(Artist);
 Album.hasMany(Review);
 Review.belongsTo(Album);
 
+Track.hasMany(Review);
+Review.belongsTo(Track);
+
 User.hasOne(Profile, {
     foreignKey: 'userId',
     onDelete: 'CASCADE'
