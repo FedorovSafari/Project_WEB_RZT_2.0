@@ -9,6 +9,7 @@ const {
     getRecentReleases,
     getRecentArtists,
     getTrackById,
+    getAlbumById,
     searchAll,
     getAllTracks,
     getArtistById,
@@ -41,6 +42,7 @@ router.post('/reviews/:id/like',authMiddleware, likeReview);
 
 // Маршруты для альбомов
 router.get('/albums/recent', getRecentAlbums);
+router.get('/albums/:id', getAlbumById);
 
 // Маршруты для артистов
 router.get('/artists/recent', getRecentArtists);

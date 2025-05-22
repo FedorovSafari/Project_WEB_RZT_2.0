@@ -424,9 +424,68 @@
             }
         }
 
+        function getArtistIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        async function loadArtistData() {
+            const artistId = getArtistIdFromUrl();
+            if (!artistId) {
+                artistProfile.innerHTML = '<div class="error-message">Артист не найден</div>';
+                return;
+            }
+
+            try {
+                // Получение артиста
+                const resArtist = await fetch(`/api/artists/${artistId}`);
+                const artist = await resArtist.json();
+
+                artistProfile.innerHTML = `
+            <img src="${artist.img || 'default-artist.png'}" alt="${artist.name}">
+            <div>
+                <h1>${artist.name}</h1>
+                <div class="artist-type">${artist.bio || 'Артист'}</div>
+                </div>
+            </div>
+        `;
+
+                // Получение треков
+                const resTracks = await fetch(`/api/artists/${artistId}/tracks`);
+                const tracks = await resTracks.json();
+                artistTracks.innerHTML = tracks.map(track => `
+            <div class="track-card">
+                <img src="${track.img || 'default-cover.png'}" alt="${track.title}">
+                <div class="track-info">
+                    <div class="track-title">${track.title}</div>
+                </div>
+            </div>
+        `).join('');
+
+                // Получение альбомов
+                const resAlbums = await fetch(`/api/artists/${artistId}/albums`);
+                const albums = await resAlbums.json();
+                artistAlbums.innerHTML = albums.map(album => `
+            <div class="album-card">
+                <img src="${album.img || 'default-album.png'}" alt="${album.title}">
+                <div class="album-meta">
+                    <div class="album-title">${album.title}</div>
+                    <div class="album-subtitle">${album.year || ''}</div>
+                </div>
+            </div>
+        `).join('');
+
+            } catch (err) {
+                console.error('Ошибка загрузки артиста:', err);
+                artistProfile.innerHTML = '<div class="error-message">Ошибка загрузки артиста</div>';
+            }
+        }
+
+
         // Инициализация страницы
         async function init() {
             await updateAuthUI();
+            await loadArtistData();
         }
 
         // Обработчики событий

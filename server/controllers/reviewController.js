@@ -52,6 +52,7 @@ exports.createReview = async (req, res) => {
         let artistId;
 
         if (trackId) {
+            console.log('track: ',trackId)
             // Получаем artistId для трека
             try {
                 artistId = await getArtistIdByTrackId(trackId);
@@ -89,6 +90,7 @@ exports.createReview = async (req, res) => {
             return res.status(201).json(reviewWithDetails);
         } else {
             // Для альбома получаем artistId напрямую из альбома
+            console.log('################################# ',albumId)
             const album = await Album.findByPk(albumId);
             if (!album) {
                 return res.status(404).json({ error: 'Альбом не найден' });
@@ -101,9 +103,9 @@ exports.createReview = async (req, res) => {
                 head,
                 description,
                 estimation,
-                albumId,
-                artistId,
-                userId: req.user.id,
+                AlbumId: albumId,
+                ArtistId: artistId,
+                UserId: req.user.id,
                 like: 0
             });
 
@@ -166,7 +168,7 @@ exports.getAlbumReviews = async (req, res) => {
         }
 
         const reviews = await Review.findAll({
-            where: { albumId },
+            where: { AlbumId: albumId },
             include: [
                 { model: User, attributes: ['id', 'email', 'nickname'] },
                 { model: Album, attributes: ['id', 'title'] }
