@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const router = Router();
+const authMiddleware = require('../middleware/authMiddleware')
 
 // Импорт контроллеров
 const {
@@ -8,12 +9,22 @@ const {
     getRecentReleases,
     getRecentArtists,
     getTrackById,
+    getAlbumById,
     searchAll,
     getAllTracks,
     getArtistById,
     getArtistTracks,
     getArtistAlbums
 } = require('../controllers/trackController');
+
+// Импорт контроллеров для рецензий
+const {
+    createReview,
+    getTrackReviews,
+    getAlbumReviews,
+    deleteReview,
+    likeReview
+} = require('../controllers/reviewController');
 
 const UserRouter = require('./UserRouter');
 
@@ -22,8 +33,16 @@ router.get('/tracks/recent', getRecentTracks);
 router.get('/tracks', getAllTracks);
 router.get('/tracks/:id', getTrackById);
 
+// Маршруты для рецензий
+router.post('/reviews', authMiddleware, createReview);
+router.get('/tracks/:id/reviews', authMiddleware, getTrackReviews);
+router.get('/albums/:id/reviews', authMiddleware, getAlbumReviews);
+router.delete('/reviews/:id',authMiddleware, deleteReview);
+router.post('/reviews/:id/like',authMiddleware, likeReview);
+
 // Маршруты для альбомов
 router.get('/albums/recent', getRecentAlbums);
+router.get('/albums/:id', getAlbumById);
 
 // Маршруты для артистов
 router.get('/artists/recent', getRecentArtists);

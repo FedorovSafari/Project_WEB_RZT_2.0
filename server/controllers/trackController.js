@@ -127,42 +127,15 @@ module.exports = {
     getArtistById: async (req, res, next) => {
         try {
             const artist = await Artist.findByPk(req.params.id, {
-                include: [
-                    {
-                        model: Track,
-                        as: 'tracks',
-                        attributes: ['id'],
-                        required: false
-                    },
-                    {
-                        model: Album,
-                        as: 'albums',
-                        attributes: ['id'],
-                        required: false
-                    }
-                ]
+                attributes: ['name', 'bio', 'img']
             });
-
             if (!artist) {
                 return next(ApiError.badRequest('Артист не найден'));
             }
 
-            // Подсчет статистики
-            const trackCount = artist.tracks?.length || 0;
-            const albumCount = artist.albums?.length || 0;
-
-            // Получаем общее количество прослушиваний
-            const plays = await Track.sum('plays', {
-                where: { artistId: artist.id }
-            }) || 0;
-
-            res.json({
-                ...artist.get({ plain: true }),
-                trackCount,
-                albumCount,
-                plays
-            });
+            res.json(artist);
         } catch (error) {
+            console.error('Ошибка при получении артиста:', error);
             next(ApiError.internal('Ошибка при загрузке артиста'));
         }
     },
@@ -173,36 +146,14 @@ module.exports = {
     getArtistTracks: async (req, res, next) => {
         try {
             const { limit = 5, sort = 'popular' } = req.query;
-
-            const order = [];
-            if (sort === 'popular') {
-                order.push(['plays', 'DESC']);
-            } else if (sort === 'newest') {
-                order.push(['date', 'DESC']);
-            }
-
             const tracks = await Track.findAll({
-                where: { artistId: req.params.id },
-                include: [
-                    {
-                        model: Album,
-                        as: 'album',
-                        attributes: ['id', 'title', 'img']
-                    },
-                    {
-                        model: Artist,
-                        attributes: ['id', 'name', 'img']
-                    }
-                ],
-                order,
+                where: { ArtistId: req.params.id },
                 limit: parseInt(limit),
-                attributes: ['id', 'title', 'plays', 'duration', 'img', 'date']
+                //attributes: ['id', 'name', 'img', 'date']
             });
-
             res.json(tracks.map(track => ({
                 ...track.get({ plain: true }),
                 artist: track.Artist,
-                album: track.album
             })));
         } catch (error) {
             next(ApiError.internal('Ошибка при загрузке треков артиста'));
@@ -215,15 +166,9 @@ module.exports = {
     getArtistAlbums: async (req, res, next) => {
         try {
             const albums = await Album.findAll({
-                where: { artistId: req.params.id },
-                include: [
-                    {
-                        model: Artist,
-                        attributes: ['id', 'name', 'img']
-                    }
-                ],
-                attributes: ['id', 'title', 'img', 'date', 'type'],
-                order: [['date', 'DESC']]
+                where: { ArtistId: req.params.id },
+                //attributes: ['id', 'title', 'img', 'date', 'type'],
+                //order: [['date', 'DESC']]
             });
 
             res.json(albums.map(album => ({
@@ -255,6 +200,49 @@ module.exports = {
             res.json(track);
         } catch (error) {
             next(ApiError.internal('Ошибка при загрузке трека'));
+        }
+    },
+
+    /**
+     * Получение альбома по ID
+     */
+    getAlbumById: async (req, res, next) => {
+        try {
+            const album = await Album.findByPk(req.params.id, {
+                include: [
+                    {
+                        model: Artist,
+                        attributes: ['id', 'name', 'img']
+                    },
+                    {
+                        model: Track,
+                        attributes: ['id', 'title', 'duration', 'img'],
+                        include: [{
+                            model: Artist,
+                            attributes: ['id', 'name']
+                        }]
+                    }
+                ]
+            });
+
+            if (!album) {
+                return next(ApiError.badRequest('Альбом не найден'));
+            }
+
+            // Форматируем ответ для удобства
+            const response = {
+                id: album.id,
+                title: album.title,
+                year: album.year,
+                img: album.img,
+                artist: album.Artist,
+                tracks: album.Track
+            };
+
+            res.json(response);
+        } catch (error) {
+            console.error('Ошибка при получении альбома:', error);
+            next(ApiError.internal('Ошибка при загрузке альбома'));
         }
     },
 
