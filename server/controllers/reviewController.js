@@ -192,7 +192,7 @@ exports.deleteReview = async (req, res) => {
 
     try {
         const review = await Review.findOne({
-            where: { id: req.params.id, userId: req.user.id }
+            where: { id: req.params.id}
         });
 
         if (!review) {
@@ -214,14 +214,62 @@ exports.likeReview = async (req, res) => {
     try {
         const review = await Review.findByPk(req.params.id);
         if (!review) return res.status(404).json({ error: 'Рецензия не найдена' });
-
+        const Like = review.like + 1
         await review.update({
-            like: sequelize.literal('like + 1')
+            like: Like
         });
 
         res.json({ success: true, like: review.like });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Ошибка при добавлении лайка' });
+    }
+};
+
+// Получение популярных рецензий (с наибольшим количеством лайков)
+exports.getPopularReviews = async (req, res) => {
+    try {
+        const reviews = await Review.findAll({
+            include: [
+                { model: User, attributes: ['id', 'nickname'] },
+                { model: Track, attributes: ['id', 'title'], required: false },
+                { model: Album, attributes: ['id', 'title'], required: false },
+                { model: Artist, attributes: ['id', 'name'] }
+            ],
+            order: [['like', 'DESC']],
+            limit: 2
+        });
+
+        res.json(reviews);
+    } catch (error) {
+        console.error('Ошибка при загрузке популярных рецензий:', error);
+        res.status(500).json({
+            error: 'Ошибка при загрузке популярных рецензий',
+            details: error.message
+        });
+    }
+};
+
+// Получение последних рецензий
+exports.getRecentReviews = async (req, res) => {
+    try {
+        const reviews = await Review.findAll({
+            include: [
+                { model: User, attributes: ['id', 'nickname'] },
+                { model: Track, attributes: ['id', 'title'], required: false },
+                { model: Album, attributes: ['id', 'title'], required: false },
+                { model: Artist, attributes: ['id', 'name'] }
+            ],
+            order: [['createdAt', 'DESC']],
+            limit: 2
+        });
+
+        res.json(reviews);
+    } catch (error) {
+        console.error('Ошибка при загрузке последних рецензий:', error);
+        res.status(500).json({
+            error: 'Ошибка при загрузке последних рецензий',
+            details: error.message
+        });
     }
 };
