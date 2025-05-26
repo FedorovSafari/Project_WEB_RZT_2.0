@@ -9,7 +9,13 @@ const User = sequelize.define('User', {
     role: {type: DataTypes.STRING, defaultValue: 'USER'},
     isEmailVerified: {type: DataTypes.BOOLEAN, defaultValue: false},
     emailVerificationToken: {type: DataTypes.STRING},
-    emailVerificationTokenExpires: {type: DataTypes.DATE}
+    emailVerificationTokenExpires: {type: DataTypes.DATE},
+    passwordResetCode: { type: DataTypes.STRING(6) },
+    passwordResetCodeExpires: { type: DataTypes.DATE },
+    passwordResetOtp: {type: DataTypes.STRING},
+    passwordResetOtpExpires: {type: DataTypes.DATE},
+    passwordResetToken: { type: DataTypes.STRING },
+    passwordResetTokenExpires: { type: DataTypes.DATE }
 })
 
 const Track = sequelize.define('Track', {

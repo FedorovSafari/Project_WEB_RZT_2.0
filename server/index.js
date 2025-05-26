@@ -70,10 +70,11 @@ app.use(helmet.contentSecurityPolicy({
     }
 }));
 
-// Ограничение запросов
+
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 минут
-    max: 100 // лимит запросов с одного IP
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 500, // limit each IP to 500 requests per windowMs
+    message: 'Слишком много запросов, попробуйте позже'
 });
 app.use(limiter);
 
@@ -82,7 +83,7 @@ app.use(cors({
     origin: process.env.CLIENT_URL || 'http://localhost:12000',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-Requested-With']
 }));
 
 app.use(cookieParser());

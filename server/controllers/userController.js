@@ -49,7 +49,6 @@ class UserController {
     async registration(req, res, next) {
         try {
             const { nickname, email, password, role = 'USER', recaptchaToken } = req.body;
-
             if (!nickname || !email || !password) {
                 return next(ApiError.badRequest('Необходимо указать имя пользователя, email и пароль'));
             }
@@ -77,7 +76,7 @@ class UserController {
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
-            const emailVerificationToken = uuidv4();
+            const emailVerificationToken = Math.floor(100000 + Math.random() * 900000).toString();
             const emailVerificationTokenExpires = new Date(Date.now() + process.env.EMAIL_VERIFICATION_EXPIRES_HOURS * 60 * 60 * 1000);
 
             const user = await User.create({
@@ -215,38 +214,38 @@ class UserController {
         try {
             const { email } = req.body;
 
-            if (!email) {
-                return next(ApiError.badRequest('Email не предоставлен'));
-            }
+            // Генерируем короткий код (6 цифр)
+            const newToken = Math.floor(100000 + Math.random() * 900000).toString();
+            const expires = new Date(Date.now() + 15 * 60000); // 15 минут
 
             const user = await User.findOne({ where: { email } });
 
             if (!user) {
-                return next(ApiError.badRequest('Пользователь с таким email не найден'));
+                return res.status(404).json({ error: "Пользователь не найден" });
             }
 
-            if (user.isEmailVerified) {
-                return next(ApiError.badRequest('Email уже подтвержден'));
-            }
+            // Обновляем токен и время его жизни
+            await user.update({
+                emailVerificationToken: newToken,
+                emailVerificationTokenExpires: expires
+            });
 
-            // Обновляем токен и срок его действия
-            user.emailVerificationToken = uuidv4();
-            user.emailVerificationTokenExpires = new Date(Date.now() + process.env.EMAIL_VERIFICATION_EXPIRES_HOURS * 60 * 60 * 1000);
-            await user.save();
+            // Отправляем письмо с новым кодом
+            const emailSent = await emailService.sendVerificationEmail(email, newToken);
 
-            // Отправляем email с подтверждением
-            const emailSent = await emailService.sendVerificationEmail(email, user.emailVerificationToken);
             if (!emailSent) {
-                return next(ApiError.internal('Не удалось отправить email с подтверждением'));
+                return res.status(500).json({ error: "Не удалось отправить письмо" });
             }
 
             return res.json({
-                message: 'Email с подтверждением отправлен. Пожалуйста, проверьте ваш почтовый ящик.',
-                emailVerificationToken: user.emailVerificationToken
+                success: true,
+                message: "Новый код подтверждения отправлен",
+                token: newToken // Для тестирования (в продакшене не возвращайте)
             });
 
         } catch (error) {
-            return next(ApiError.internal(error.message));
+            console.error('Ошибка повторной отправки:', error);
+            return res.status(500).json({ error: "Внутренняя ошибка сервера" });
         }
     }
 
@@ -284,6 +283,147 @@ class UserController {
             // Очищаем куку
             res.clearCookie('authToken');
             return res.json({ message: 'Вы успешно вышли' });
+
+        } catch (error) {
+            return next(ApiError.internal(error.message));
+        }
+    }
+    async requestPasswordReset(req, res, next) {
+        try {
+            const { email } = req.body;
+
+            if (!email) {
+                return next(ApiError.badRequest('Email обязателен'));
+            }
+
+            // Ищем пользователя
+            const user = await User.findOne({ where: { email } });
+            if (!user) {
+                // Для безопасности не сообщаем, что пользователь не найден
+                return res.json({
+                    message: 'Если пользователь с таким email существует, на него будет отправлен код подтверждения'
+                });
+            }
+
+            // Генерируем 6-значный OTP
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 минут
+
+            // Сохраняем OTP в базе данных
+            user.passwordResetOtp = otp;
+            user.passwordResetOtpExpires = otpExpires;
+            await user.save();
+
+            // Отправляем OTP на email
+            const emailSent = await emailService.sendPasswordResetOtp(email, otp);
+            if (!emailSent) {
+                console.error('Не удалось отправить OTP');
+                return next(ApiError.internal('Ошибка при отправке OTP'));
+            }
+
+            res.json({
+                message: 'Код подтверждения отправлен на ваш email',
+                email: email // Для демонстрации, в production лучше не возвращать
+            });
+
+        } catch (error) {
+            return next(ApiError.internal(error.message));
+        }
+    }
+
+    async verifyOtp(req, res, next) {
+        try {
+            const { email, otp } = req.body;
+
+            if (!email || !otp) {
+                return next(ApiError.badRequest('Email и OTP обязательны'));
+            }
+
+            // Ищем пользователя
+            const user = await User.findOne({
+                where: {
+                    email,
+                    passwordResetOtp: otp,
+                    passwordResetOtpExpires: { [Op.gt]: new Date() }
+                }
+            });
+
+            if (!user) {
+                return next(ApiError.badRequest('Неверный или просроченный OTP'));
+            }
+
+            // Генерируем токен для сброса пароля
+            const resetToken = uuidv4();
+            const resetTokenExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 минут
+
+            // Сохраняем токен
+            user.passwordResetToken = resetToken;
+            user.passwordResetTokenExpires = resetTokenExpires;
+            user.passwordResetOtp = null; // Очищаем OTP после использования
+            user.passwordResetOtpExpires = null;
+            await user.save();
+
+            res.json({
+                success: true,
+                resetToken,
+                message: 'OTP подтвержден. Теперь вы можете установить новый пароль.'
+            });
+
+        } catch (error) {
+            return next(ApiError.internal(error.message));
+        }
+    }
+
+    async resetPassword(req, res, next) {
+        try {
+            const { resetToken, newPassword, confirmPassword } = req.body;
+
+            console.log('Received resetToken:', resetToken); // Логирование
+
+            if (!resetToken) {
+                return next(ApiError.badRequest('Токен сброса отсутствует'));
+            }
+
+
+            if (!resetToken || !newPassword || !confirmPassword) {
+                return next(ApiError.badRequest('Все поля обязательны'));
+            }
+
+            if (newPassword !== confirmPassword) {
+                return next(ApiError.badRequest('Пароли не совпадают'));
+            }
+
+            // Проверка сложности пароля
+            if (newPassword.length < 8) {
+                return next(ApiError.badRequest('Пароль должен содержать минимум 8 символов'));
+            }
+
+            // Ищем пользователя с действительным токеном
+            const user = await User.findOne({
+                where: {
+                    passwordResetToken: resetToken,
+                    passwordResetTokenExpires: { [Op.gt]: new Date() }
+                }
+            });
+
+            if (!user) {
+                console.log('Invalid token or expired for:', resetToken);
+                return next(ApiError.badRequest('Недействительный или просроченный токен сброса'));
+            }
+
+            // Хешируем новый пароль
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+            // Обновляем пароль и очищаем токены
+            user.password = hashedPassword;
+            user.passwordResetToken = null;
+            user.passwordResetTokenExpires = null;
+            await user.save();
+
+            res.json({
+                success: true,
+                message: 'Пароль успешно изменен. Теперь вы можете войти с новым паролем.'
+            });
 
         } catch (error) {
             return next(ApiError.internal(error.message));

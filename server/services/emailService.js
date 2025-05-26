@@ -52,6 +52,27 @@ class EmailService {
             return false;
         }
     }
+    async sendPasswordResetOtp(email, otp) {
+        try {
+            const info = await this.transporter.sendMail({
+                from: `"Music Portal" <${process.env.EMAIL_FROM}>`,
+                to: email,
+                subject: 'Код подтверждения для сброса пароля',
+                html: `
+                <h2>Сброс пароля</h2>
+                <p>Ваш код подтверждения: <strong>${otp}</strong></p>
+                <p>Этот код действителен в течение 5 минут.</p>
+                <p>Если вы не запрашивали сброс пароля, проигнорируйте это письмо.</p>
+            `
+            });
+
+            console.log('Письмо с OTP отправлено! ID:', info.messageId);
+            return true;
+        } catch (error) {
+            console.error('Ошибка отправки письма с OTP:', error);
+            return false;
+        }
+    }
 }
 
 module.exports = new EmailService();

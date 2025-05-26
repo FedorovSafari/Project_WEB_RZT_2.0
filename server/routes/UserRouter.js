@@ -11,4 +11,7 @@ router.post('/logout', authMiddleware, userController.logout)
 router.post('/registration', userController.registration.bind(userController));
 router.post('/verify-email', userController.verifyEmail.bind(userController));
 router.post('/resend-verification', userController.resendVerificationEmail.bind(userController));
+router.post('/request-password-reset', userController.requestPasswordReset.bind(userController));
+router.post('/verify-otp', userController.verifyOtp.bind(userController));
+router.post('/reset-password', userController.resetPassword.bind(userController));
 module.exports = router
