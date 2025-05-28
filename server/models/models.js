@@ -52,13 +52,16 @@ const Review = sequelize.define('Review', {
     head: {type: DataTypes.STRING, allowNull: false},
     description: {type: DataTypes.TEXT, allowNull: false},
     estimation: {type: DataTypes.INTEGER, allowNull: false},
-    like: {type: DataTypes.INTEGER, allowNull: false},
 })
 
 const Profile = sequelize.define('Profile', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     bio: {type: DataTypes.TEXT, allowNull: false},
     img: {type: DataTypes.STRING, allowNull: false},
+})
+
+const Like = sequelize.define('Like', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
 })
 
 Artist.hasMany(Track);
@@ -99,6 +102,21 @@ Profile.belongsTo(User, {
     foreignKey: 'userId'
 });
 
+User.hasMany(Like);
+Like.belongsTo(User);
+
+Track.hasMany(Like);
+Like.belongsTo(Track);
+
+Album.hasMany(Like);
+Like.belongsTo(Album);
+
+Artist.hasMany(Like);
+Like.belongsTo(Artist);
+
+Review.hasMany(Like);
+Like.belongsTo(Review);
+
 module.exports = {
     User,
     Track,
@@ -106,5 +124,6 @@ module.exports = {
     Album,
     Artist,
     Review,
-    Profile
+    Profile,
+    Like
 }

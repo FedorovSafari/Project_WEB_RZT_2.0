@@ -23,12 +23,12 @@ const {
     getTrackReviews,
     getAlbumReviews,
     deleteReview,
-    likeReview,
     getPopularReviews,
     getRecentReviews
 } = require('../controllers/reviewController');
 
 const UserRouter = require('./UserRouter');
+const likeRouter = require('./likeRouter');
 
 // Маршруты для треков
 router.get('/tracks/recent', getRecentTracks);
@@ -40,7 +40,6 @@ router.post('/reviews', authMiddleware, createReview);
 router.get('/tracks/:id/reviews', authMiddleware, getTrackReviews);
 router.get('/albums/:id/reviews', authMiddleware, getAlbumReviews);
 router.delete('/reviews/:id',authMiddleware, deleteReview);
-router.post('/reviews/:id/like',authMiddleware, likeReview);
 router.get('/reviews/popular', getPopularReviews);
 router.get('/reviews/recent', getRecentReviews);
 
@@ -62,5 +61,6 @@ router.get('/search', searchAll);
 
 // Пользовательские маршруты
 router.use('/user', UserRouter);
+router.use('/like', likeRouter);
 
 module.exports = router;

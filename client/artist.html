@@ -442,38 +442,40 @@
                 const artist = await resArtist.json();
 
                 artistProfile.innerHTML = `
-            <img src="${artist.img || 'default-artist.png'}" alt="${artist.name}">
-            <div>
-                <h1>${artist.name}</h1>
-                <div class="artist-type">${artist.bio || 'Артист'}</div>
-                </div>
-            </div>
-        `;
+                    <img src="${artist.img || 'default-artist.png'}" alt="${artist.name}">
+                    <div>
+                        <h1>${artist.name}</h1>
+                        <div class="artist-type">${artist.bio || 'Артист'}</div>
+                    </div>
+                `;
 
                 // Получение треков
                 const resTracks = await fetch(`/api/artists/${artistId}/tracks`);
                 const tracks = await resTracks.json();
+
                 artistTracks.innerHTML = tracks.map(track => `
-            <div class="track-card">
-                <img src="${track.img || 'default-cover.png'}" alt="${track.title}">
-                <div class="track-info">
-                    <div class="track-title">${track.title}</div>
-                </div>
-            </div>
-        `).join('');
+                    <div class="track-card" data-track-id="${track.id}">
+                        <img src="${track.img || 'default-cover.png'}" alt="${track.title}">
+                        <div class="track-info">
+                            <div class="track-title">${track.title}</div>
+                            <div class="track-album">${track.album ? track.album.title : ''}</div>
+                        </div>
+                    </div>
+                `).join('');
 
                 // Получение альбомов
                 const resAlbums = await fetch(`/api/artists/${artistId}/albums`);
                 const albums = await resAlbums.json();
+
                 artistAlbums.innerHTML = albums.map(album => `
-            <div class="album-card">
-                <img src="${album.img || 'default-album.png'}" alt="${album.title}">
-                <div class="album-meta">
-                    <div class="album-title">${album.title}</div>
-                    <div class="album-subtitle">${album.year || ''}</div>
-                </div>
-            </div>
-        `).join('');
+                    <div class="album-card" data-album-id="${album.id}">
+                        <img src="${album.img || 'default-album.png'}" alt="${album.title}">
+                        <div class="album-meta">
+                            <div class="album-title">${album.title}</div>
+                            <div class="album-subtitle">${album.year || ''}</div>
+                        </div>
+                    </div>
+                `).join('');
 
             } catch (err) {
                 console.error('Ошибка загрузки артиста:', err);
@@ -481,11 +483,34 @@
             }
         }
 
+        // Обработка кликов на треки
+        function setupTrackClickHandlers() {
+            document.addEventListener('click', function(e) {
+                // Проверяем, был ли клик по карточке трека или его дочерним элементам
+                const trackCard = e.target.closest('.track-card');
+                if (trackCard) {
+                    const trackId = trackCard.getAttribute('data-track-id');
+                    if (trackId) {
+                        window.location.href = `track.html?id=${trackId}`;
+                    }
+                }
+
+                // Проверяем, был ли клик по карточке альбома или его дочерним элементам
+                const albumCard = e.target.closest('.album-card');
+                if (albumCard) {
+                    const albumId = albumCard.getAttribute('data-album-id');
+                    if (albumId) {
+                        window.location.href = `album.html?id=${albumId}`;
+                    }
+                }
+            });
+        }
 
         // Инициализация страницы
         async function init() {
             await updateAuthUI();
             await loadArtistData();
+            setupTrackClickHandlers();
         }
 
         // Обработчики событий

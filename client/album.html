@@ -425,6 +425,17 @@
             z-index: 2;
         }
 
+        .artist-link {
+            color: #aaa;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .artist-link:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
         /* Стили для отображения средней оценки */
         .average-rating {
             margin-top: 10px;
@@ -444,6 +455,37 @@
             justify-content: center;
             font-weight: bold;
             font-size: 16px;
+        }
+
+        .album-likes {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+            cursor: pointer;
+            color: #aaa;
+            transition: color 0.3s ease;
+        }
+
+        .album-likes:hover {
+            color: #ff5555;
+        }
+
+        .album-likes.liked {
+            color: #ff5555;
+        }
+
+        /* Анимация для лайков рецензий */
+        .review-likes.liked {
+            animation: heartBeat 0.5s;
+        }
+
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.2); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
 
         @media (max-width: 768px) {
@@ -597,7 +639,49 @@
             }
         }
 
-        // Загрузка данных альбома
+        // Функция переключения лайка
+        async function toggleLike(entityType, entityId) {
+            try {
+                if (!currentUser) {
+                    alert('Для этого действия необходимо авторизоваться');
+                    return false;
+                }
+
+                // Проверяем текущее состояние лайка
+                const checkResponse = await fetch(`/api/like/check?userId=${currentUser.id}&${entityType}Id=${entityId}`, {
+                    credentials: 'include'
+                });
+
+                if (!checkResponse.ok) throw new Error('Ошибка проверки лайка');
+                const { hasLike } = await checkResponse.json();
+
+                // Добавляем или удаляем лайк
+                const method = hasLike ? 'DELETE' : 'POST';
+                const response = await fetch('/api/like', {
+                    method,
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        [`${entityType}Id`]: entityId
+                    })
+                });
+
+                if (!response.ok) throw new Error(hasLike ? 'Не удалось убрать лайк' : 'Не удалось поставить лайк');
+                await loadAlbum();
+                await loadReviews();
+                return !hasLike;
+
+            } catch (error) {
+                console.error(`Ошибка при работе с лайком ${entityType}:`, error);
+                alert(error.message);
+                throw error;
+            }
+        }
+
+        // Загрузка данных альбома с лайками
         async function loadAlbum() {
             if (!albumId) {
                 document.querySelector('.album-cover').innerHTML = `
@@ -609,9 +693,10 @@
             }
 
             try {
-                const [albumResponse, reviewsResponse] = await Promise.all([
+                const [albumResponse, reviewsResponse, likesResponse] = await Promise.all([
                     fetch(`/api/albums/${albumId}`, { credentials: 'include' }),
-                    fetch(`/api/albums/${albumId}/reviews`, { credentials: 'include' })
+                    fetch(`/api/albums/${albumId}/reviews`, { credentials: 'include' }),
+                    fetch(`/api/like/album/${albumId}/count`, { credentials: 'include' })
                 ]);
 
                 if (!albumResponse.ok) throw new Error('Альбом не найден');
@@ -619,22 +704,54 @@
 
                 const album = await albumResponse.json();
                 const reviews = await reviewsResponse.json();
+                const likesCount = await likesResponse.json().then(data => data.count).catch(() => 0);
 
                 const averageRating = calculateAverageRating(reviews);
+
+                // Проверяем, лайкнул ли пользователь альбом
+                let hasUserLike = false;
+                if (currentUser) {
+                    const likeCheck = await fetch(`/api/like/check?userId=${currentUser.id}&AlbumId=${albumId}`, {
+                        credentials: 'include'
+                    });
+                    if (likeCheck.ok) {
+                        const result = await likeCheck.json();
+                        hasUserLike = result.hasLike;
+                    }
+                }
 
                 document.querySelector('.album-cover').innerHTML = `
                     <img src="${album.img || 'https://i.imgur.com/zDT7uYr.jpg'}" alt="Обложка альбома">
                     <div class="album-cover-info">
                         <h1>${album.title}</h1>
-                        <p>${album.Artist?.name || 'Неизвестный артист'} · ${album.year || 'Неизвестный год'} · ${album.tracks?.length || 0} треков</p>
+                        <p>${album.Artist ? `<a href="artist.html?id=${album.Artist.id}" class="artist-link">${album.Artist.name}</a>` : 'Неизвестный артист'} · ${'Album'}</p>
                         ${averageRating ? `
                         <div class="average-rating">
                             <div class="average-rating-value">${averageRating.toFixed(1)}</div>
                             <span>Средняя оценка</span>
                         </div>
                         ` : '<p>Еще нет оценок</p>'}
+                        <div class="album-likes ${hasUserLike ? 'liked' : ''}" data-id="${albumId}">
+                            <i class="fas fa-heart"></i> <span>${likesCount}</span>
+                        </div>
                     </div>
                 `;
+
+                // Обработчик лайка альбома
+                document.querySelector('.album-likes')?.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    if (!currentUser) {
+                        alert('Для этого действия необходимо авторизоваться');
+                        return;
+                    }
+
+                    const isLikedNow = await toggleLike('Album', albumId);
+                    const likesCountElement = e.currentTarget.querySelector('span');
+                    const currentCount = parseInt(likesCountElement.textContent);
+
+                    e.currentTarget.classList.toggle('liked', isLikedNow);
+                    likesCountElement.textContent = isLikedNow ? currentCount + 1 : currentCount - 1;
+                });
 
             } catch (error) {
                 document.querySelector('.album-cover').innerHTML = `
@@ -646,15 +763,38 @@
             }
         }
 
+        // Проверка лайков пользователя на рецензиях
+        async function checkUserLikes(reviews) {
+            if (!currentUser || !reviews.length) {
+                return reviews.map(review => ({ ...review, hasUserLike: false }));
+            }
 
-        // Вычисление средней оценки
-        function calculateAverageRating(reviews) {
-            if (!reviews || reviews.length === 0) return 0;
-            const sum = reviews.reduce((total, review) => total + review.estimation, 0);
-            return sum / reviews.length;
+            try {
+                const response = await fetch(`/api/like/user/${currentUser.id}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    console.error('Ошибка сервера:', response.status, await response.text());
+                    return reviews.map(review => ({ ...review, hasUserLike: false }));
+                }
+
+                const userLikes = await response.json();
+                const likedReviews = new Set(
+                    userLikes.filter(like => like.ReviewId).map(like => like.ReviewId)
+                );
+
+                return reviews.map(review => ({
+                    ...review,
+                    hasUserLike: likedReviews.has(review.id)
+                }));
+            } catch (error) {
+                console.error('Ошибка проверки лайков:', error);
+                return reviews.map(review => ({ ...review, hasUserLike: false }));
+            }
         }
 
-        // Загрузка рецензий
+        // Загрузка рецензий с лайками
         async function loadReviews() {
             try {
                 userReviews.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
@@ -665,34 +805,28 @@
                 if (!response.ok) throw new Error('Ошибка при загрузке рецензий');
 
                 const reviews = await response.json();
-                displayReviews(reviews);
+                const reviewsWithLikes = await checkUserLikes(reviews);
+                await displayReviews(reviewsWithLikes);
+
             } catch (error) {
                 userReviews.innerHTML = `
                     <div class="error-message">
                         Не удалось загрузить рецензии: ${error.message}
-                        <button onclick="loadReviews()" style="
-                            background: #fff;
-                            color: #000;
-                            border: none;
-                            padding: 8px 16px;
-                            border-radius: 20px;
-                            margin-top: 10px;
-                            cursor: pointer;
-                        ">Попробовать снова</button>
+                        <button onclick="loadReviews()" class="retry-button">Попробовать снова</button>
                     </div>
                 `;
                 console.error('Ошибка при загрузке рецензий:', error);
             }
         }
 
-        // Отображение рецензий
-        function displayReviews(reviews) {
+        // Отображение рецензий с лайками
+        async function displayReviews(reviews) {
             if (!reviews || reviews.length === 0) {
                 userReviews.innerHTML = '<p>Пока нет рецензий. Будьте первым!</p>';
                 return;
             }
 
-            userReviews.innerHTML = reviews.map(review => {
+            const reviewsHtml = await Promise.all(reviews.map(async review => {
                 const date = new Date(review.createdAt);
                 const formattedDate = date.toLocaleDateString('ru-RU', {
                     year: 'numeric',
@@ -701,6 +835,7 @@
                 });
 
                 const isCurrentUserReview = review.UserId === currentUser?.id;
+                const likesCount = await getLikesCount('review', review.id);
 
                 return `
                     <div class="review" data-review-id="${review.id}">
@@ -711,9 +846,9 @@
                         <h3 class="review-title">${review.head}</h3>
                         <p class="review-text">${review.description}</p>
                         <div class="review-footer">
-                            <span class="review-rating">Оценка: ${review.estimation}/10</span>
-                            <span class="review-likes ${review.liked ? 'liked' : ''}" data-id="${review.id}">
-                                <i class="fas fa-heart"></i> ${review.like || 0}
+                            <span class="review-rating"><i class="fas fa-star"></i> ${review.estimation}/10</span>
+                            <span class="review-likes ${review.hasUserLike ? 'liked' : ''}" data-id="${review.id}">
+                                <i class="fas fa-heart"></i> <span class="likes-count">${likesCount}</span>
                             </span>
                             ${isCurrentUserReview ? `
                                 <button class="delete-review" data-id="${review.id}">Удалить</button>
@@ -721,9 +856,11 @@
                         </div>
                     </div>
                 `;
-            }).join('');
+            }));
 
-            // Обработчики событий
+            userReviews.innerHTML = reviewsHtml.join('');
+
+            // Обработчики событий для рецензий
             document.querySelectorAll('.delete-review').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     if (confirm('Удалить эту рецензию?')) {
@@ -734,9 +871,49 @@
 
             document.querySelectorAll('.review-likes').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
-                    await likeReview(e.currentTarget.dataset.id);
+                    e.preventDefault();
+                    const reviewId = e.currentTarget.dataset.id;
+                    const likesCountElement = e.currentTarget.querySelector('.likes-count');
+
+                    try {
+                        const isLikedNow = await toggleLike('Review', reviewId);
+                        const currentCount = parseInt(likesCountElement.textContent);
+
+                        e.currentTarget.classList.toggle('liked', isLikedNow);
+                        if (isLikedNow) {
+                            e.currentTarget.classList.add('liked');
+                            likesCountElement.textContent = currentCount + 1;
+                        } else {
+                            e.currentTarget.classList.remove('liked');
+                            likesCountElement.textContent = currentCount - 1;
+                        }
+
+                    } catch (error) {
+                        console.error('Ошибка при обработке лайка:', error);
+                    }
                 });
             });
+        }
+
+        // Получение количества лайков
+        async function getLikesCount(entityType, entityId) {
+            try {
+                const response = await fetch(`/api/like/${entityType}/${entityId}/count`);
+                if (!response.ok) throw new Error('Ошибка получения количества лайков');
+                const { count } = await response.json();
+                return count;
+            } catch (error) {
+                console.error('Ошибка:', error);
+                return 0;
+            }
+        }
+
+
+        // Вычисление средней оценки
+        function calculateAverageRating(reviews) {
+            if (!reviews || reviews.length === 0) return 0;
+            const sum = reviews.reduce((total, review) => total + review.estimation, 0);
+            return sum / reviews.length;
         }
 
         // Отправка новой рецензии
@@ -815,27 +992,10 @@
 
                 if (!response.ok) throw new Error('Ошибка при удалении рецензии');
 
-                await loadReviews();
+                await Promise.all([loadAlbum(), loadReviews()]);
             } catch (error) {
                 console.error('Ошибка при удалении рецензии:', error);
                 alert('Не удалось удалить рецензию');
-            }
-        }
-
-        // Лайк рецензии
-        async function likeReview(reviewId) {
-            try {
-                const response = await fetch(`/api/reviews/${reviewId}/like`, {
-                    method: 'POST',
-                    credentials: 'include'
-                });
-
-                if (!response.ok) throw new Error('Ошибка при добавлении лайка');
-
-                await loadReviews();
-            } catch (error) {
-                console.error('Ошибка при лайке:', error);
-                alert('Не удалось поставить лайк');
             }
         }
 

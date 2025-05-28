@@ -1,4 +1,4 @@
-const { Review, User, Track, Album, Artist } = require('../models/models');
+const { Review, User, Track, Album, Artist, Like } = require('../models/models');
 const sequelize = require('../db');
 
 // Функция для получения artistId по trackId
@@ -75,7 +75,6 @@ exports.createReview = async (req, res) => {
                 AlbumId: track.albumId || null,
                 ArtistId: artistId,
                 UserId: req.user.id,
-                like: 0
             });
 
             const reviewWithDetails = await Review.findByPk(review.id, {
@@ -90,7 +89,6 @@ exports.createReview = async (req, res) => {
             return res.status(201).json(reviewWithDetails);
         } else {
             // Для альбома получаем artistId напрямую из альбома
-            console.log('################################# ',albumId)
             const album = await Album.findByPk(albumId);
             if (!album) {
                 return res.status(404).json({ error: 'Альбом не найден' });
@@ -207,45 +205,89 @@ exports.deleteReview = async (req, res) => {
     }
 };
 
-// Лайк рецензии
-exports.likeReview = async (req, res) => {
-    if (!req.user) return res.status(401).json({ error: 'Необходима авторизация' });
-
-    try {
-        const review = await Review.findByPk(req.params.id);
-        if (!review) return res.status(404).json({ error: 'Рецензия не найдена' });
-        const Like = review.like + 1
-        await review.update({
-            like: Like
-        });
-
-        res.json({ success: true, like: review.like });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Ошибка при добавлении лайка' });
-    }
-};
-
 // Получение популярных рецензий (с наибольшим количеством лайков)
 exports.getPopularReviews = async (req, res) => {
     try {
-        const reviews = await Review.findAll({
+        // Получаем популярные рецензии
+        const popularReviews = await Review.findAll({
+            attributes: ['id', 'head', 'description', 'createdAt'],
             include: [
-                { model: User, attributes: ['id', 'nickname'] },
-                { model: Track, attributes: ['id', 'title'], required: false },
-                { model: Album, attributes: ['id', 'title'], required: false },
-                { model: Artist, attributes: ['id', 'name'] }
+                {
+                    model: User,
+                    attributes: ['nickname']
+                },
+                {
+                    model: Track,
+                    attributes: ['id', 'title'],
+                    required: false
+                },
+                {
+                    model: Album,
+                    attributes: ['id', 'title'],
+                    required: false
+                },
+                {
+                    model: Artist,
+                    attributes: ['id', 'name'],
+                    required: false
+                },
+                {
+                    model: Like,
+                    attributes: [],
+                    required: false
+                }
             ],
-            order: [['like', 'DESC']],
-            limit: 2
+            group: ['Review.id', 'User.id', 'Track.id', 'Album.id', 'Artist.id'],
+            order: [[sequelize.fn('COUNT', sequelize.col('Likes.id')), 'DESC']],
+            limit: 2,
+            subQuery: false
         });
 
-        res.json(reviews);
+        if (!popularReviews || popularReviews.length === 0) {
+            return res.status(404).json({
+                message: 'Популярные рецензии не найдены'
+            });
+        }
+
+        // Форматируем данные для ответа
+        const formattedReviews = popularReviews.map(review => {
+            const baseReview = {
+                id: review.id,
+                title: review.head,
+                text: review.description,
+                createdAt: review.createdAt,
+                user: {
+                    nickname: review.User.nickname
+                }
+            };
+
+            // Определяем тип сущности (трек, альбом)
+            if (review.Track) {
+                baseReview.entity = {
+                    type: 'track',
+                    title: review.Track.title
+                };
+            } else if (review.Album) {
+                baseReview.entity = {
+                    type: 'album',
+                    title: review.Album.title
+                };
+            }
+
+            return baseReview;
+        });
+        res.json({
+            success: true,
+            count: formattedReviews.length,
+            reviews: formattedReviews
+        });
+
     } catch (error) {
         console.error('Ошибка при загрузке популярных рецензий:', error);
         res.status(500).json({
-            error: 'Ошибка при загрузке популярных рецензий',
-            details: error.message
+            success: false,
+            error: 'Внутренняя ошибка сервера',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 };
@@ -253,23 +295,88 @@ exports.getPopularReviews = async (req, res) => {
 // Получение последних рецензий
 exports.getRecentReviews = async (req, res) => {
     try {
-        const reviews = await Review.findAll({
+        // Получаем последние рецензии с дополнительной информацией
+        const recentReviews = await Review.findAll({
+            attributes: ['id', 'head', 'description', 'createdAt'],
             include: [
-                { model: User, attributes: ['id', 'nickname'] },
-                { model: Track, attributes: ['id', 'title'], required: false },
-                { model: Album, attributes: ['id', 'title'], required: false },
-                { model: Artist, attributes: ['id', 'name'] }
+                {
+                    model: User,
+                    attributes: ['nickname']
+                },
+                {
+                    model: Track,
+                    attributes: ['id', 'title'],
+                    required: false
+                },
+                {
+                    model: Album,
+                    attributes: ['id', 'title'],
+                    required: false
+                },
+                {
+                    model: Artist,
+                    attributes: ['id', 'name'],
+                    required: false
+                },
+                {
+                    model: Like,
+                    attributes: [],
+                    required: false
+                }
             ],
+            group: ['Review.id', 'User.id', 'Track.id', 'Album.id', 'Artist.id'],
             order: [['createdAt', 'DESC']],
-            limit: 2
+            limit: 2,
+            subQuery: false
         });
 
-        res.json(reviews);
+        if (!recentReviews || recentReviews.length === 0) {
+            return res.status(404).json({
+                message: 'Последние рецензии не найдены'
+            });
+        }
+
+        // Форматируем данные для ответа
+        const formattedReviews = recentReviews.map(review => {
+            const baseReview = {
+                id: review.id,
+                title: review.head,
+                text: review.description,
+                createdAt: review.createdAt,
+                likesCount: review.Likes ? review.Likes.length : 0,
+                user: {
+                    nickname: review.User.nickname
+                }
+            };
+
+            // Определяем тип сущности (трек, альбом)
+            if (review.Track) {
+                baseReview.entity = {
+                    type: 'track',
+                    title: review.Track.title
+                };
+            } else if (review.Album) {
+                baseReview.entity = {
+                    type: 'album',
+                    title: review.Album.title
+                };
+            }
+
+            return baseReview;
+        });
+
+        res.json({
+            success: true,
+            count: formattedReviews.length,
+            reviews: formattedReviews
+        });
+
     } catch (error) {
         console.error('Ошибка при загрузке последних рецензий:', error);
         res.status(500).json({
-            error: 'Ошибка при загрузке последних рецензий',
-            details: error.message
+            success: false,
+            error: 'Внутренняя ошибка сервера',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 };

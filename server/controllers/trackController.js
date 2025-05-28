@@ -185,14 +185,12 @@ module.exports = {
      */
     getTrackById: async (req, res, next) => {
         try {
-            console.log('id: ',req.params)
             const track = await Track.findByPk(req.params.id, {
                 include: [{
                     model: Artist,
                     attributes: ['id', 'name', 'img']
                 }]
             });
-
             if (!track) {
                 return next(ApiError.badRequest('Трек не найден'));
             }
@@ -209,40 +207,22 @@ module.exports = {
     getAlbumById: async (req, res, next) => {
         try {
             const album = await Album.findByPk(req.params.id, {
-                include: [
-                    {
-                        model: Artist,
-                        attributes: ['id', 'name', 'img']
-                    },
+                include: [{
+                    model: Artist,
+                    attributes: ['id', 'name', 'img']
+                },
                     {
                         model: Track,
-                        attributes: ['id', 'title', 'duration', 'img'],
-                        include: [{
-                            model: Artist,
-                            attributes: ['id', 'name']
-                        }]
-                    }
-                ]
+                        attributes: ['id']
+                    }]
             });
-
             if (!album) {
                 return next(ApiError.badRequest('Альбом не найден'));
             }
 
-            // Форматируем ответ для удобства
-            const response = {
-                id: album.id,
-                title: album.title,
-                year: album.year,
-                img: album.img,
-                artist: album.Artist,
-                tracks: album.Track
-            };
-
-            res.json(response);
+            res.json(album);
         } catch (error) {
-            console.error('Ошибка при получении альбома:', error);
-            next(ApiError.internal('Ошибка при загрузке альбома'));
+            next(ApiError.internal('Ошибка при загрузке трека'));
         }
     },
 
